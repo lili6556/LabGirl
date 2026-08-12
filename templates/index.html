@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Cientistas no Mundo</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --cyan-star: #67E8F9;
+            --gold:      #F59E0B;
+            --white:     #F0F4FF;
+
+            /* Tamanhos fluidos: escalam suavemente entre mobile e desktop */
+            --font-titulo:    clamp(28px, 8vw, 72px);
+            --font-subtitulo: clamp(22px, 6vw, 52px);
+            --font-descricao: clamp(12px, 3vw, 15px);
+            --font-eyebrow:   clamp(9px,  2vw, 11px);
+
+            /* Tamanho do planeta fluido */
+            --planeta-size:   clamp(260px, 75vw, 560px);
+
+            /* Quanto o planeta fica escondido embaixo */
+            --planeta-offset: clamp(-60px, -12vw, -220px);
+        }
+
+        html, body {
+            width: 100%;
+            /* dvh resolve a barra do Safari/Chrome mobile que muda de altura */
+            height: 100dvh;
+            min-height: 100dvh;
+        }
+
+        body {
+            overflow: hidden;
+            position: relative;
+
+            background-image: url("/static/imagens/fundo.jpg");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            /* Safe area para iPhones com notch/dynamic island */
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+
+            transition: filter 1.4s ease, opacity 1.4s ease;
+        }
+
+        /* Gradiente de profundidade */
+        body::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 70% 50% at 50% 100%, rgba(107,33,168,0.30) 0%, transparent 70%),
+                radial-gradient(ellipse 100% 60% at 50% 0%,   rgba(5,10,24,0.55)  0%, transparent 80%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Canvas de estrelas */
+        #stars-canvas {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* ── Overlay de texto ── */
+        .overlay {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            /* margem top fluida: mais espaço em desktop, menos em mobile */
+            margin-top: clamp(28px, 6vh, 52px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .eyebrow {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: clamp(8px, 2vh, 14px);
+            opacity: 0;
+            transform: translateY(-10px);
+            animation: fadeUp 0.9s ease 0.2s forwards;
+        }
+
+        .eyebrow-line {
+            width: clamp(24px, 5vw, 40px);
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--cyan-star));
+        }
+
+        .eyebrow-line.right {
+            background: linear-gradient(to left, transparent, var(--cyan-star));
+        }
+
+        .eyebrow span {
+            font-family: 'Inter', sans-serif;
+            font-size: var(--font-eyebrow);
+            font-weight: 500;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--cyan-star);
+            white-space: nowrap;
+        }
+
+        .titulo {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 600;
+            font-size: var(--font-titulo);
+            line-height: 1.05;
+            color: var(--white);
+            letter-spacing: 1px;
+            text-shadow:
+                0 0 60px rgba(103, 232, 249, 0.18),
+                0 2px 24px rgba(5, 10, 24, 0.6);
+            opacity: 0;
+            transform: translateY(-10px);
+            animation: fadeUp 1s ease 0.45s forwards;
+        }
+
+        .subtitulo {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 300;
+            font-style: italic;
+            font-size: var(--font-subtitulo);
+            color: var(--gold);
+            margin-top: -2px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 30px rgba(245, 158, 11, 0.35);
+            opacity: 0;
+            transform: translateY(-10px);
+            animation: fadeUp 1s ease 0.65s forwards;
+        }
+
+        .descricao {
+            font-family: 'Inter', sans-serif;
+            font-size: var(--font-descricao);
+            font-weight: 300;
+            color: rgba(240, 244, 255, 0.65);
+            margin-top: clamp(10px, 2vh, 18px);
+            letter-spacing: 0.3px;
+            max-width: 340px;
+            line-height: 1.5;
+            opacity: 0;
+            animation: fadeUp 1s ease 0.85s forwards;
+        }
+
+        /* ── Planeta ── */
+        .planeta-wrapper {
+            position: absolute;
+            bottom: var(--planeta-offset);
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            cursor: pointer;
+            /* torna a área de toque generosa em mobile */
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+
+            animation: halo-pulse 4s ease-in-out infinite;
+            transition: filter 0.5s ease, transform 0.5s ease;
+        }
+
+        /* Hover só em dispositivos com ponteiro (não dispara em touch) */
+        @media (hover: hover) and (pointer: fine) {
+            .planeta-wrapper:hover {
+                animation: none;
+                filter: drop-shadow(0 0 22px rgba(103,232,249,0.65))
+                        drop-shadow(0 0 55px rgba(103,232,249,0.30));
+                transform: translateX(-50%) translateY(-6px);
+            }
+        }
+
+        @keyframes halo-pulse {
+            0%, 100% { filter: drop-shadow(0 0 12px rgba(103,232,249,0.20)); }
+            50%       { filter: drop-shadow(0 0 28px rgba(103,232,249,0.45))
+                                drop-shadow(0 0 60px rgba(107,33,168,0.25)); }
+        }
+
+        #planeta {
+            width: var(--planeta-size);
+            display: block;
+            animation: planet-float 7s ease-in-out infinite;
+            /* evita drag acidental em mobile */
+            -webkit-user-drag: none;
+            user-select: none;
+        }
+
+        @keyframes planet-float {
+            0%   { transform: translateY(0px)   rotate(0deg); }
+            50%  { transform: translateY(-10px) rotate(1deg); }
+            100% { transform: translateY(0px)   rotate(0deg); }
+        }
+
+        /* Animação de clique */
+        .animacao-planeta {
+            animation: none !important;
+            transform: translateX(-50%) scale(1.08) translateY(-12px) !important;
+            filter:
+                drop-shadow(0 0 40px rgba(103,232,249,0.85))
+                drop-shadow(0 0 90px rgba(103,232,249,0.50))
+                drop-shadow(0 0 160px rgba(107,33,168,0.40)) !important;
+            transition:
+                transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                filter    0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+        }
+
+        .animacao-planeta #planeta {
+            animation: none !important;
+        }
+
+        .transicao {
+            filter: brightness(0.5) !important;
+            opacity: 0 !important;
+        }
+
+        /* ── Dica de interação ── */
+        .hint {
+            position: absolute;
+            bottom: clamp(16px, 4vh, 28px);
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(9px, 2vw, 11px);
+            font-weight: 400;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(240, 244, 255, 0.35);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            animation: fadeUp 1s ease 1.4s forwards;
+            white-space: nowrap;
+        }
+
+        .hint-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--cyan-star);
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 0.3; }
+            50%       { opacity: 1; }
+        }
+
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ──────────────────────────────────────────────
+           BREAKPOINTS ESPECÍFICOS POR DISPOSITIVO
+           ────────────────────────────────────────────── */
+
+        /* Celulares muito pequenos: Galaxy A01, Moto E, iPhone SE (1ª gen) */
+        @media (max-width: 360px) and (max-height: 640px) {
+            :root {
+                --font-titulo:    24px;
+                --font-subtitulo: 19px;
+                --planeta-size:   220px;
+                --planeta-offset: -40px;
+            }
+            .descricao { display: none; } /* economiza espaço */
+            .overlay   { margin-top: 18px; }
+        }
+
+        /* iPhone SE 2ª/3ª gen (375×667) e similares */
+        @media (max-width: 390px) and (max-height: 700px) {
+            :root {
+                --planeta-size:   240px;
+                --planeta-offset: -45px;
+            }
+        }
+
+        /* Celulares médios: Moto G, Galaxy A série, iPhone 13/14 mini */
+        @media (max-width: 430px) {
+            :root {
+                --planeta-size:   clamp(240px, 80vw, 300px);
+                --planeta-offset: clamp(-50px, -10vw, -60px);
+            }
+        }
+
+        /* iPhone 14/15 Pro Max, Samsung S24 Ultra (larguras 428–430px) */
+        @media (min-width: 390px) and (max-width: 430px) and (min-height: 800px) {
+            :root {
+                --planeta-size:   320px;
+                --planeta-offset: -70px;
+            }
+        }
+
+        /* Tablets pequenos e celulares em landscape (600–900px) */
+        @media (min-width: 600px) and (max-width: 900px) {
+            :root {
+                --planeta-size:   clamp(300px, 55vw, 500px);
+                --planeta-offset: clamp(-80px, -14vw, -140px);
+            }
+        }
+
+        /* Landscape em celular: tela larga e baixa */
+        @media (max-height: 500px) and (orientation: landscape) {
+            :root {
+                --planeta-size:   clamp(180px, 38vh, 280px);
+                --planeta-offset: clamp(-30px, -6vh, -60px);
+            }
+            .overlay    { margin-top: 12px; }
+            .descricao  { display: none; }
+            .eyebrow    { margin-bottom: 6px; }
+            .hint       { display: none; } /* sem espaço em landscape */
+        }
+
+        /* Desktop e tablets grandes */
+        @media (min-width: 900px) {
+            :root {
+                --planeta-size:   560px;
+                --planeta-offset: -220px;
+            }
+        }
+
+        /* Telas grandes (iMac, monitores) */
+        @media (min-width: 1400px) {
+            :root { --planeta-size: 620px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="stars-canvas"></canvas>
+
+    <div class="overlay">
+        <div class="eyebrow">
+            <span class="eyebrow-line"></span>
+            <span>Ciência &amp; História</span>
+            <span class="eyebrow-line right"></span>
+        </div>
+        <h1 class="titulo">LABGIRL</h1>
+        <h2 class="subtitulo">A rede de mulheres na ciência</h2>
+        <p class="descricao">Descubra mulheres que transformaram a ciência ao redor do planeta</p>
+    </div>
+
+    <p class="hint">
+        <span class="hint-dot"></span>
+        Toque no planeta para explorar
+        <span class="hint-dot"></span>
+    </p>
+
+    <div class="planeta-wrapper" id="planeta-wrapper">
+        <img
+            src="{{ url_for('static', filename='imagens/planeta.png') }}"
+            alt="Planeta Terra"
+            id="planeta">
+    </div>
+
+    <script>
+        /* ── Partículas estelares ── */
+        (function () {
+            const canvas = document.getElementById('stars-canvas');
+            const ctx    = canvas.getContext('2d');
+            let W, H, stars = [], raf;
+
+            function resize() {
+                W = canvas.width  = window.innerWidth;
+                H = canvas.height = window.innerHeight;
+            }
+
+            /* Menos estrelas em mobile para poupar bateria */
+            function starCount() {
+                return window.innerWidth < 600 ? 80 : 160;
+            }
+
+            function createStars(n) {
+                stars = Array.from({ length: n }, () => ({
+                    x:     Math.random() * W,
+                    y:     Math.random() * H,
+                    r:     Math.random() * 1.4 + 0.3,
+                    speed: Math.random() * 0.004 + 0.001,
+                    phase: Math.random() * Math.PI * 2,
+                    drift: (Math.random() - 0.5) * 0.12,
+                }));
+            }
+
+            function draw(t) {
+                ctx.clearRect(0, 0, W, H);
+                stars.forEach(s => {
+                    const a = 0.3 + 0.7 * Math.abs(Math.sin(s.phase + t * s.speed));
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(167,230,249,${a * 0.8})`;
+                    ctx.fill();
+                    s.x += s.drift;
+                    if (s.x < 0) s.x = W;
+                    if (s.x > W) s.x = 0;
+                });
+                raf = requestAnimationFrame(draw);
+            }
+
+            /* Pausa animação quando a aba fica invisível (poupa bateria) */
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) cancelAnimationFrame(raf);
+                else raf = requestAnimationFrame(draw);
+            });
+
+            window.addEventListener('resize', () => { resize(); createStars(starCount()); });
+            resize();
+            createStars(starCount());
+            requestAnimationFrame(draw);
+        })();
+
+        /* ── Interação do planeta ── */
+        const wrapper = document.getElementById('planeta-wrapper');
+
+        wrapper.addEventListener('click', () => {
+            wrapper.classList.add('animacao-planeta');
+            document.body.classList.add('transicao');
+            setTimeout(() => { window.location.href = '/mapa'; }, 750);
+        });
+
+        window.addEventListener('pageshow', () => {
+            wrapper.classList.remove('animacao-planeta');
+            document.body.classList.remove('transicao');
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,2978 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Cientistas</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+
+*, *::before, *::after {
+    margin: 0; padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --cyan:   #67E8F9;
+    --gold:   #F59E0B;
+    --white:  #F0F4FF;
+    --glass:  rgba(8, 14, 35, 0.60);
+    --border: rgba(103, 232, 249, 0.12);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: 'Inter', sans-serif;
+    min-height: 100dvh;
+    background: radial-gradient(ellipse 120% 100% at 60% 110%,
+                    #0d1b4b 0%, #080e28 40%, #04060f 100%);
+    color: var(--white);
+    padding-top: env(safe-area-inset-top);
+}
+
+/* Canvas de estrelas */
+#stars-canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Névoa */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 55% 60% at 20% 40%, rgba(107,33,168,0.18) 0%, transparent 65%),
+        radial-gradient(ellipse 40% 50% at 80% 70%, rgba(14,60,140,0.14) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* ── Cabeçalho da página ── */
+.page-header {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding: 52px 20px 36px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(4, 8, 22, 0.30);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.page-eyebrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    animation: fadeUp 0.7s ease 0.1s both;
+}
+
+.page-eyebrow-line {
+    width: 40px; height: 1px;
+    background: linear-gradient(to right, transparent, var(--cyan));
+    opacity: 0.5;
+}
+.page-eyebrow-line.right {
+    background: linear-gradient(to left, transparent, var(--cyan));
+}
+
+.page-eyebrow span {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 3.5px;
+    text-transform: uppercase;
+    color: var(--cyan);
+    opacity: 0.8;
+}
+
+#tituloPagina {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: clamp(28px, 5vw, 52px);
+    color: var(--white);
+    letter-spacing: 0.5px;
+    animation: fadeUp 0.8s ease 0.25s both;
+}
+
+#tituloPagina em {
+    font-style: italic;
+    font-weight: 300;
+    color: var(--gold);
+}
+
+.page-desc {
+    margin-top: 10px;
+    font-size: 13px;
+    font-weight: 300;
+    color: rgba(240,244,255,0.45);
+    letter-spacing: 0.3px;
+    animation: fadeUp 0.8s ease 0.40s both;
+}
+
+/* ── Botão voltar no topo ── */
+.btn-voltar-topo {
+    position: absolute;
+    top: 50%; left: 28px;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 15px;
+    background: rgba(103,232,249,0.07);
+    border: 1px solid rgba(103,232,249,0.20);
+    border-radius: 10px;
+    color: var(--cyan);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: background 0.25s, border-color 0.25s, transform 0.25s;
+    text-decoration: none;
+    animation: fadeUp 0.7s ease 0.15s both;
+    z-index: 20;
+}
+
+.btn-voltar-topo:hover {
+    background: rgba(103,232,249,0.14);
+    border-color: rgba(103,232,249,0.40);
+    transform: translateY(calc(-50% - 2px));
+}
+
+/* ── Grid de cards ── */
+.container {
+    position: relative;
+    z-index: 10;
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 44px 0 60px;
+}
+
+.lista-cientistas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+.card-cientista {
+    background: rgba(10, 18, 45, 0.65);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 24px 22px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
+    animation: fadeCard 0.45s ease both;
+}
+
+.card-cientista:nth-child(1) { animation-delay: 0.05s; }
+.card-cientista:nth-child(2) { animation-delay: 0.10s; }
+.card-cientista:nth-child(3) { animation-delay: 0.15s; }
+.card-cientista:nth-child(4) { animation-delay: 0.20s; }
+.card-cientista:nth-child(5) { animation-delay: 0.25s; }
+.card-cientista:nth-child(6) { animation-delay: 0.30s; }
+
+@keyframes fadeCard {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* brilho no canto superior direito */
+.card-cientista::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 100px; height: 100px;
+    background: radial-gradient(circle, rgba(103,232,249,0.10), transparent 70%);
+    transition: opacity 0.3s;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.card-cientista:hover {
+    transform: translateY(-6px);
+    border-color: rgba(103,232,249,0.30);
+    box-shadow:
+        0 12px 40px rgba(0,0,0,0.35),
+        0 0 0 1px rgba(103,232,249,0.08);
+}
+
+.card-cientista:hover::before { opacity: 1; }
+
+/* tag da área */
+.card-area-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    background: rgba(245,158,11,0.12);
+    border: 1px solid rgba(245,158,11,0.22);
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+}
+
+.card-cientista h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 22px;
+    color: var(--white);
+    line-height: 1.2;
+    margin-bottom: 6px;
+}
+
+.card-cientista p {
+    font-size: 12px;
+    font-weight: 300;
+    color: rgba(240,244,255,0.45);
+    margin-bottom: 16px;
+}
+
+.card-cta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--cyan);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    opacity: 0.65;
+    transition: opacity 0.22s, gap 0.22s;
+}
+
+.card-cientista:hover .card-cta { opacity: 1; gap: 9px; }
+
+.card-cta-arrow { font-size: 13px; }
+
+/* ── Modal ── */
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 5, 15, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.modal-conteudo {
+    width: 100%;
+    max-width: 820px;
+    max-height: 90dvh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(103,232,249,0.2) transparent;
+
+    background: rgba(8, 14, 38, 0.96);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 40px 36px;
+    position: relative;
+
+    box-shadow:
+        0 0 60px rgba(103,232,249,0.07),
+        0 30px 80px rgba(0,0,0,0.6);
+
+    animation: modalIn 0.35s cubic-bezier(0.25,0.46,0.45,0.94) both;
+}
+
+@keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95) translateY(16px); }
+    to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+
+.modal-conteudo::-webkit-scrollbar       { width: 4px; }
+.modal-conteudo::-webkit-scrollbar-track { background: transparent; }
+.modal-conteudo::-webkit-scrollbar-thumb { background: rgba(103,232,249,0.2); border-radius: 4px; }
+
+/* gradiente no topo do modal */
+.modal-conteudo::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--cyan) 30%, var(--gold) 70%, transparent);
+    border-radius: 24px 24px 0 0;
+    opacity: 0.5;
+}
+
+.fechar {
+    position: absolute;
+    right: 20px; top: 14px;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    color: rgba(240,244,255,0.45);
+    cursor: pointer;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.04);
+    transition: color 0.2s, background 0.2s;
+    line-height: 1;
+}
+
+.fechar:hover {
+    color: var(--white);
+    background: rgba(255,255,255,0.09);
+}
+
+/* Layout interno do modal */
+.modal-body {
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
+}
+
+.modal-foto-col {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+
+#fotoCientista {
+    width: 190px;
+    height: 190px;
+    object-fit: cover;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    box-shadow: 0 0 30px rgba(103,232,249,0.15);
+    display: block;
+}
+
+.modal-nome-area {
+    text-align: center;
+}
+
+#nomeCientista {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 22px;
+    color: var(--white);
+    line-height: 1.2;
+    margin-bottom: 6px;
+}
+
+#areaCientista {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 11px;
+    background: rgba(245,158,11,0.12);
+    border: 1px solid rgba(245,158,11,0.22);
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+}
+
+.modal-divider {
+    width: 1px;
+    align-self: stretch;
+    background: var(--border);
+    flex-shrink: 0;
+}
+
+.modal-bio-col { flex: 1; min-width: 0; }
+
+.modal-bio-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: rgba(240,244,255,0.30);
+    margin-bottom: 14px;
+}
+
+#biografiaCientista {
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 1.85;
+    color: rgba(240,244,255,0.75);
+    white-space: pre-line;
+}
+
+/* Destaques automáticos no texto */
+#biografiaCientista strong {
+    color: var(--white);
+    font-weight: 500;
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+    .btn-voltar-topo {
+        position: static;
+        transform: none;
+        margin: 0 auto 18px;
+        width: fit-content;
+        display: flex;
+    }
+
+    .page-header { padding: 36px 20px 28px; }
+
+    .modal-body { flex-direction: column; align-items: center; }
+
+    .modal-divider { width: 100%; height: 1px; align-self: auto; }
+
+    .modal-conteudo { padding: 28px 20px; }
+
+    #fotoCientista { width: 150px; height: 150px; }
+
+    .modal-bio-col { width: 100%; }
+
+    .container { padding: 28px 0 48px; }
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<canvas id="stars-canvas"></canvas>
+
+<!-- Cabeçalho -->
+<header class="page-header">
+    <button class="btn-voltar-topo" id="btnVoltar">← Voltar</button>
+
+    <div class="page-eyebrow">
+        <span class="page-eyebrow-line"></span>
+        <span>Mulheres Cientistas</span>
+        <span class="page-eyebrow-line right"></span>
+    </div>
+
+    <h1 id="tituloPagina"></h1>
+    <p class="page-desc">Clique em uma cientista para conhecer sua história</p>
+</header>
+
+<!-- Cards -->
+<div class="container">
+    <div id="listaCientistas" class="lista-cientistas"></div>
+</div>
+
+<!-- Modal -->
+<div id="modal" class="modal">
+    <div class="modal-conteudo">
+
+        <span id="fecharModal" class="fechar">✕</span>
+
+        <div class="modal-body">
+
+            <div class="modal-foto-col">
+                <img id="fotoCientista">
+                <div class="modal-nome-area">
+                    <h2 id="nomeCientista"></h2>
+                    <h3 id="areaCientista"></h3>
+                </div>
+            </div>
+
+            <div class="modal-divider"></div>
+
+            <div class="modal-bio-col">
+                <p class="modal-bio-label">Biografia</p>
+                <div id="biografiaCientista"></div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<!-- Estrelas -->
+<script>
+(function () {
+    const canvas = document.getElementById('stars-canvas');
+    const ctx    = canvas.getContext('2d');
+    let W, H, stars = [], nebulas = [], raf;
+
+    function resize() {
+        W = canvas.width  = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+    }
+
+    function createStars() {
+        stars = Array.from({ length: 200 }, () => ({
+            x:      Math.random() * W,
+            y:      Math.random() * H,
+            r:      Math.random() * 1.4 + 0.2,
+            phase:  Math.random() * Math.PI * 2,
+            speed:  Math.random() * 0.003 + 0.0008,
+            drift:  (Math.random() - 0.5) * 0.06,
+            bright: Math.random() * 0.5 + 0.3,
+            glow:   false,
+        }));
+        for (let i = 0; i < 10; i++) {
+            stars.push({ x: Math.random()*W, y: Math.random()*H, r: Math.random()*2+1.2,
+                phase: Math.random()*Math.PI*2, speed: Math.random()*0.002+0.0005,
+                drift: (Math.random()-0.5)*0.04, bright: 0.75, glow: true });
+        }
+        nebulas = [
+            { x:W*0.10, y:H*0.20, rx:200, ry:130, color:'rgba(103,50,200,0.07)'  },
+            { x:W*0.75, y:H*0.55, rx:240, ry:170, color:'rgba(30,90,200,0.06)'   },
+            { x:W*0.50, y:H*0.90, rx:280, ry:110, color:'rgba(103,232,249,0.04)' },
+        ];
+    }
+
+    function draw(t) {
+        ctx.clearRect(0, 0, W, H);
+        nebulas.forEach(n => {
+            const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, Math.max(n.rx,n.ry));
+            g.addColorStop(0, n.color); g.addColorStop(1,'transparent');
+            ctx.save(); ctx.scale(1, n.ry/n.rx);
+            ctx.beginPath(); ctx.arc(n.x, n.y*(n.rx/n.ry), n.rx, 0, Math.PI*2);
+            ctx.fillStyle = g; ctx.fill(); ctx.restore();
+        });
+        stars.forEach(s => {
+            const a = s.bright * (0.4 + 0.6*Math.abs(Math.sin(s.phase + t*s.speed)));
+            if (s.glow) {
+                const g = ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r*5);
+                g.addColorStop(0, `rgba(200,235,255,${a*0.4})`); g.addColorStop(1,'transparent');
+                ctx.beginPath(); ctx.arc(s.x,s.y,s.r*5,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
+            }
+            ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+            ctx.fillStyle=`rgba(210,235,255,${a})`; ctx.fill();
+            s.x += s.drift;
+            if (s.x < -5) s.x = W+5;
+            if (s.x > W+5) s.x = -5;
+        });
+        raf = requestAnimationFrame(draw);
+    }
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) cancelAnimationFrame(raf);
+        else raf = requestAnimationFrame(draw);
+    });
+
+    window.addEventListener('resize', () => { resize(); createStars(); });
+    resize(); createStars();
+    requestAnimationFrame(draw);
+})();
+</script>
+
+<script>
+
+const cientistasPorEstado = {
+
+    "Brasil":{
+
+        "Espírito Santo":[
+
+            {
+                nome:"Nome da Cientista",
+
+                area:"Biologia",
+
+                foto:"/static/imagens/cientistas/cientista1.jpg",
+
+                biografia:`
+                Aqui vai o texto completo enviado pelo grupo.
+                `
+            }
+
+        ],
+
+        "São Paulo":[
+
+            {
+                nome:"Mayana Zatz",
+
+                area:"Genética Humana e Biologia Molecular",
+
+                foto:"/static/imagens/cientistas/mayana.jpg",
+
+                biografia:`
+Quem é:
+Mayana Zatz é uma das maiores geneticistas do Brasil e professora da Universidade de São Paulo (USP). É referência mundial em pesquisas sobre genética humana, doenças neuromusculares e terapias com células-tronco.
+
+O que fez:
+• Pioneira no estudo de doenças genéticas e distrofias musculares no Brasil.
+• Coordenadora do Centro de Pesquisas sobre o Genoma Humano e Células-Tronco da USP.
+• Contribuiu para a identificação de genes responsáveis por diversas doenças hereditárias.
+• Desenvolveu pesquisas que abriram novas possibilidades para tratamentos utilizando células-tronco.
+• Atua na divulgação científica e na defesa da pesquisa genética no país.
+
+Dificuldades:
+• Enfrentou forte resistência política, jurídica e religiosa durante a luta pela aprovação das pesquisas com células-tronco embrionárias no Brasil.
+• Precisou defender a importância da ciência e da pesquisa genética em debates públicos e no Congresso Nacional.
+• Como mulher na área das ciências biomédicas, enfrentou desafios para conquistar espaço e reconhecimento em um ambiente historicamente dominado por homens.
+
+Prêmios e reconhecimentos:
+• Prêmio L'Oréal-UNESCO para Mulheres na Ciência.
+• Grã-Cruz da Ordem Nacional do Mérito Científico.
+• Membro da Academia Brasileira de Ciências.
+
+Curiosidade:
+Mayana Zatz também fundou a Associação Brasileira de Distrofia Muscular (ABDIM), que oferece atendimento e apoio a pacientes com doenças neuromusculares e suas famílias.
+`
+            },
+            {
+                nome:"Johanna Döbereiner",
+
+                area:"Agronomia e Microbiologia",
+
+                foto:"/static/imagens/cientistas/johanna.jpg",
+
+                biografia:`
+Quem foi:
+Johanna Döbereiner foi uma agrônoma e microbiologista brasileira de origem tcheca, reconhecida internacionalmente por revolucionar a agricultura com suas pesquisas sobre a fixação biológica de nitrogênio. Atuou durante muitos anos na Embrapa e tornou-se uma das cientistas mais importantes da história do Brasil.
+
+O que fez:
+• Descobriu que bactérias presentes no solo podem fornecer nitrogênio naturalmente às plantas, especialmente à soja.
+• Desenvolveu pesquisas que reduziram significativamente o uso de fertilizantes químicos na agricultura brasileira.
+• Suas descobertas aumentaram a produtividade agrícola e diminuíram os custos de produção.
+• Contribuiu para tornar o Brasil uma das maiores potências mundiais na produção de soja.
+• Seus estudos são utilizados até hoje em diversos países.
+
+Dificuldades:
+• Enfrentou desafios por atuar em uma área predominantemente masculina, especialmente nas décadas de 1950 e 1960.
+• Precisou comprovar cientificamente a eficácia da fixação biológica de nitrogênio, enfrentando resistência de pesquisadores que defendiam o uso exclusivo de fertilizantes químicos.
+• Trabalhou por muitos anos para que suas descobertas fossem reconhecidas internacionalmente.
+
+Prêmios e reconhecimentos:
+• Indicada ao Prêmio Nobel de Química em 1997.
+• Recebeu a Ordem Nacional do Mérito Científico.
+• Considerada uma das maiores cientistas da agricultura mundial.
+• Recebeu diversas homenagens da Embrapa e de instituições científicas internacionais.
+
+Curiosidade:
+Graças às pesquisas de Johanna Döbereiner, o Brasil economiza bilhões de dólares por ano com a redução do uso de fertilizantes nitrogenados, tornando a agricultura brasileira mais sustentável e competitiva no mercado internacional.
+`
+            },
+            {
+                nome:"Suzana Herculano-Houzel",
+
+                area:"Neurociência",
+
+                foto:"/static/imagens/cientistas/suzana.jpg",
+
+                biografia:`
+Quem é:
+Suzana Herculano-Houzel é uma neurocientista brasileira reconhecida internacionalmente por suas pesquisas sobre o cérebro humano. Professora e pesquisadora, tornou-se referência mundial na área da neurociência ao desenvolver métodos inovadores para estudar a quantidade de neurônios presentes no cérebro.
+
+O que fez:
+• Desenvolveu o método conhecido como "fracionador isotrópico", que permite contar neurônios de forma rápida e precisa.
+• Demonstrou que o cérebro humano possui aproximadamente 86 bilhões de neurônios, corrigindo uma estimativa amplamente aceita durante décadas.
+• Realizou importantes pesquisas sobre a evolução do cérebro dos seres humanos e de outros animais.
+• Publicou diversos artigos científicos em revistas internacionais e escreveu livros de divulgação científica.
+• Contribuiu para ampliar o conhecimento sobre o funcionamento, a evolução e a capacidade do cérebro humano.
+
+Dificuldades:
+• Enfrentou dificuldades para obter financiamento para pesquisas no Brasil.
+• Precisou superar os desafios de desenvolver pesquisas de alto nível com recursos limitados.
+• Como mulher na área da ciência, também enfrentou obstáculos para conquistar reconhecimento em um ambiente historicamente dominado por homens.
+
+Prêmios e reconhecimentos:
+• Recebeu diversos prêmios nacionais e internacionais por suas pesquisas em neurociência.
+• Tornou-se professora da Universidade Vanderbilt, nos Estados Unidos.
+• É considerada uma das neurocientistas brasileiras mais influentes da atualidade.
+
+Curiosidade:
+Foi a criadora do método do "fracionador isotrópico", uma técnica utilizada por pesquisadores de vários países para contar neurônios em diferentes espécies de animais, revolucionando os estudos sobre o cérebro.
+`
+            },
+            {
+                nome:"Vanderlan da Silva Bolzani",
+
+                area:"Química",
+
+                foto:"/static/imagens/cientistas/vanderlan.jpg",
+
+                biografia:`
+Quem é:
+Vanderlan da Silva Bolzani é uma química brasileira e professora da Universidade Estadual Paulista (UNESP). É reconhecida internacionalmente por suas pesquisas com produtos naturais da biodiversidade brasileira e pelo desenvolvimento de substâncias com potencial para a produção de novos medicamentos.
+
+O que fez:
+• Desenvolveu pesquisas sobre compostos químicos extraídos de plantas da biodiversidade brasileira.
+• Contribuiu para a descoberta de moléculas com potencial para o desenvolvimento de medicamentos contra diversas doenças.
+• Tornou-se uma das maiores especialistas brasileiras em Química de Produtos Naturais.
+• Incentivou a conservação da biodiversidade brasileira por meio da pesquisa científica.
+• Formou dezenas de mestres, doutores e pesquisadores ao longo de sua carreira.
+
+Dificuldades:
+• Enfrentou a baixa representatividade feminina nas áreas de Química e Ciências Exatas.
+• Precisou conquistar espaço e reconhecimento em um ambiente científico historicamente dominado por homens.
+• Também enfrentou desafios relacionados ao financiamento da pesquisa científica e à valorização da ciência no Brasil.
+
+Prêmios e reconhecimentos:
+• Membro Titular da Academia Brasileira de Ciências.
+• Recebeu o Prêmio L'Oréal-UNESCO para Mulheres na Ciência.
+• Recebeu a Medalha Simão Mathias da Sociedade Brasileira de Química.
+• Foi eleita uma das cientistas mais influentes da América Latina na área da Química.
+
+Curiosidade:
+Grande parte de suas pesquisas busca transformar substâncias encontradas em plantas brasileiras em novos medicamentos, mostrando como a biodiversidade do Brasil pode contribuir para avanços na saúde e na indústria farmacêutica.
+`
+            },
+            {
+                nome:"Maria José von Paumgartten Deane",
+
+                area:"Parasitologia",
+
+                foto:"/static/imagens/cientistas/maria.jpg",
+
+                biografia:`
+Quem foi:
+Maria José von Paumgartten Deane foi uma médica, parasitologista e pesquisadora brasileira, considerada uma das maiores especialistas em doenças tropicais do país. Dedicou grande parte de sua carreira ao estudo da malária, da doença de Chagas e de outras enfermidades causadas por parasitas, tornando-se referência nacional e internacional na área da saúde pública.
+
+O que fez:
+• Realizou importantes pesquisas sobre a malária, contribuindo para a compreensão da transmissão e do controle da doença.
+• Desenvolveu estudos sobre a doença de Chagas, leishmaniose e outras doenças tropicais.
+• Trabalhou no Instituto Oswaldo Cruz (Fiocruz) e colaborou com diversas instituições científicas brasileiras.
+• Participou da formação de novos pesquisadores nas áreas de parasitologia e medicina tropical.
+• Suas pesquisas ajudaram no desenvolvimento de estratégias para prevenção e combate às doenças parasitárias no Brasil.
+
+Dificuldades:
+• Atuou em uma época em que poucas mulheres ocupavam cargos de destaque em laboratórios e instituições científicas.
+• Enfrentou desafios para conquistar reconhecimento em uma área predominantemente masculina.
+• Realizou pesquisas de campo em regiões de difícil acesso, enfrentando condições adversas durante seus estudos.
+
+Prêmios e reconhecimentos:
+• Recebeu diversas homenagens por sua contribuição à parasitologia brasileira.
+• Tornou-se uma das pesquisadoras mais respeitadas da Fiocruz.
+• É lembrada como uma das pioneiras da pesquisa em doenças tropicais no Brasil.
+
+Curiosidade:
+Ao lado de seu marido, o pesquisador Leonidas Deane, realizou importantes expedições científicas pela Amazônia e outras regiões do Brasil, contribuindo significativamente para o conhecimento das doenças tropicais que afetam a população brasileira.
+`
+            }
+
+        ],
+
+        "Rio de Janeiro":[
+
+            {
+                nome:"Bertha Lutz",
+
+                area:"Biologia",
+
+                foto:"/static/imagens/cientistas/bertha.jpg",
+
+                biografia:`
+Quem foi:
+Bertha Maria Júlia Lutz foi uma bióloga, pesquisadora, professora, política e uma das maiores defensoras dos direitos das mulheres no Brasil. Trabalhou durante décadas no Museu Nacional do Rio de Janeiro, onde se destacou por suas pesquisas em zoologia, especialmente com anfíbios, além de liderar importantes movimentos pela igualdade de gênero.
+
+O que fez:
+• Realizou importantes pesquisas sobre anfíbios, tornando-se uma das maiores especialistas brasileiras nesse grupo de animais.
+• Trabalhou como pesquisadora do Museu Nacional, contribuindo para o desenvolvimento da zoologia no Brasil.
+• Liderou a luta pelo direito ao voto feminino, conquistado em 1932.
+• Representou o Brasil em conferências internacionais sobre direitos das mulheres e igualdade de gênero.
+• Participou da elaboração da Carta das Nações Unidas, defendendo a inclusão da igualdade entre homens e mulheres no documento.
+
+Dificuldades:
+• Enfrentou preconceitos por atuar simultaneamente na ciência e na política, áreas predominantemente masculinas na época.
+• Precisou enfrentar resistência de setores da sociedade que eram contrários aos direitos das mulheres.
+• Teve que provar constantemente sua competência científica em um período em que poucas mulheres ocupavam cargos de destaque na pesquisa.
+
+Prêmios e reconhecimentos:
+• Considerada uma das pioneiras do feminismo no Brasil.
+• Recebeu diversas homenagens por sua contribuição à ciência e aos direitos das mulheres.
+• Seu nome é lembrado em instituições, escolas, prêmios e pesquisas relacionadas à igualdade de gênero e à biologia.
+
+Curiosidade:
+Além de ser uma importante cientista, Bertha Lutz foi uma das principais responsáveis pela conquista do voto feminino no Brasil e participou da Conferência de São Francisco, em 1945, ajudando a garantir que a igualdade de direitos entre homens e mulheres fosse mencionada na Carta das Nações Unidas.
+`
+            },
+            {
+                nome:"Nise da Silveira",
+
+                area:"Psiquiatria",
+
+                foto:"/static/imagens/cientistas/nise.jpg",
+
+                biografia:`
+Quem foi:
+Nise da Silveira foi uma médica psiquiatra brasileira, reconhecida internacionalmente por revolucionar o tratamento de pessoas com transtornos mentais. Tornou-se uma das maiores referências da psiquiatria humanizada ao defender que os pacientes fossem tratados com respeito, dignidade e cuidado, em vez de métodos violentos.
+
+O que fez:
+• Revolucionou o tratamento psiquiátrico no Brasil ao rejeitar procedimentos agressivos, como eletrochoques, lobotomias e isolamento dos pacientes.
+• Introduziu a arte, a pintura, a escultura e a terapia ocupacional como formas de tratamento para pessoas com transtornos mentais.
+• Fundou o Museu de Imagens do Inconsciente, reunindo milhares de obras produzidas por pacientes psiquiátricos.
+• Desenvolveu pesquisas inspiradas nas teorias do psiquiatra Carl Gustav Jung sobre a mente humana.
+• Contribuiu para transformar a forma como a saúde mental é tratada no Brasil e influenciou a Reforma Psiquiátrica Brasileira.
+
+Dificuldades:
+• Foi criticada e desacreditada por colegas médicos ao recusar tratamentos considerados comuns na época, como eletrochoques e lobotomias.
+• Enfrentou preconceitos por ser mulher em uma profissão predominantemente masculina.
+• Foi presa durante o Estado Novo, em 1936, por motivos políticos, o que interrompeu temporariamente sua carreira.
+• Precisou lutar por muitos anos para que seus métodos humanizados fossem reconhecidos pela comunidade científica.
+
+Prêmios e reconhecimentos:
+• Recebeu diversas homenagens nacionais e internacionais por sua contribuição à psiquiatria.
+• Tornou-se referência mundial em saúde mental humanizada.
+• Seu trabalho inspirou a criação de museus, centros de pesquisa e projetos de inclusão social para pessoas com transtornos mentais.
+
+Curiosidade:
+Nise da Silveira acreditava que a arte era uma poderosa forma de expressão do inconsciente. O Museu de Imagens do Inconsciente, criado por ela no Rio de Janeiro, preserva mais de 350 mil obras produzidas por pacientes e é considerado um dos mais importantes acervos de arte ligada à saúde mental no mundo.
+`
+            },
+            {
+                nome:"Elisa Frota Pessoa",
+
+                area:"Física Nuclear",
+
+                foto:"/static/imagens/cientistas/elisa.jpg",
+
+                biografia:`
+Quem foi:
+Elisa Frota Pessoa foi uma física brasileira e uma das pioneiras da Física Nuclear no Brasil. Professora e pesquisadora, dedicou grande parte de sua carreira ao estudo dos raios cósmicos e das partículas subatômicas, tornando-se uma das cientistas mais importantes da história da física brasileira.
+
+O que fez:
+• Realizou pesquisas pioneiras sobre raios cósmicos e física de partículas.
+• Contribuiu para o desenvolvimento da Física Nuclear no Brasil.
+• Trabalhou em importantes instituições de pesquisa, como o Centro Brasileiro de Pesquisas Físicas (CBPF) e a Universidade Federal do Rio de Janeiro (UFRJ).
+• Colaborou com cientistas brasileiros e estrangeiros em estudos sobre partículas elementares.
+• Formou diversas gerações de físicos e ajudou a fortalecer a pesquisa científica no país.
+
+Dificuldades:
+• Iniciou sua carreira em uma época em que havia poucas mulheres atuando na Física e nas Ciências Exatas.
+• Precisou conquistar reconhecimento em um ambiente científico predominantemente masculino.
+• Enfrentou desafios para obter recursos e ampliar a pesquisa em Física Nuclear no Brasil durante as primeiras décadas da área.
+
+Prêmios e reconhecimentos:
+• Foi pesquisadora do Centro Brasileiro de Pesquisas Físicas (CBPF).
+• Recebeu diversas homenagens por sua contribuição ao desenvolvimento da Física brasileira.
+• É reconhecida como uma das pioneiras da Física Nuclear no Brasil.
+• Tornou-se referência para novas gerações de mulheres cientistas.
+
+Curiosidade:
+Elisa Frota Pessoa iniciou sua carreira ao lado de grandes nomes da física brasileira, como César Lattes e José Leite Lopes, contribuindo para consolidar o Brasil como um importante centro de pesquisa em Física Nuclear e Física de Partículas.
+`
+            },
+            {
+                nome:"Martha Vannucci",
+
+                area:"Oceanografia",
+
+                foto:"/static/imagens/cientistas/martha.jpg",
+
+                biografia:`
+Quem foi:
+Martha Vannucci foi uma oceanógrafa e bióloga marinha brasileira, reconhecida internacionalmente como uma das maiores especialistas em ecossistemas costeiros e manguezais. É considerada uma das pioneiras da oceanografia no Brasil e teve papel fundamental no desenvolvimento da pesquisa marinha no país.
+
+O que fez:
+• Realizou importantes estudos sobre os manguezais e sua importância para o equilíbrio dos ecossistemas costeiros.
+• Contribuiu para o desenvolvimento da oceanografia e da biologia marinha no Brasil.
+• Trabalhou no Instituto Oceanográfico da Universidade de São Paulo (USP), formando novos pesquisadores.
+• Atuou como especialista da UNESCO, desenvolvendo projetos de preservação ambiental em diversos países.
+• Suas pesquisas ajudaram a compreender a biodiversidade marinha e a importância da conservação dos ambientes costeiros.
+
+Dificuldades:
+• Iniciou sua carreira em uma época em que poucas mulheres atuavam nas ciências naturais e na oceanografia.
+• Enfrentou desafios para conquistar reconhecimento em um ambiente científico predominantemente masculino.
+• Realizou pesquisas de campo em regiões de difícil acesso, enfrentando condições climáticas e logísticas desafiadoras.
+
+Prêmios e reconhecimentos:
+• Reconhecida internacionalmente como uma das maiores especialistas em manguezais.
+• Atuou como consultora da UNESCO em projetos de conservação marinha.
+• Recebeu diversas homenagens por suas contribuições à oceanografia e à preservação ambiental.
+• Tornou-se referência mundial nos estudos sobre ecossistemas costeiros.
+
+Curiosidade:
+Martha Vannucci dedicou grande parte de sua vida à proteção dos manguezais, defendendo que esses ecossistemas são essenciais para a reprodução de inúmeras espécies marinhas, a proteção do litoral e o equilíbrio ambiental, sendo conhecida mundialmente como uma das maiores especialistas nesse tema.
+`
+            },
+            {
+                nome:"Sonja Ashauer",
+
+                area:"Física",
+
+                foto:"/static/imagens/cientistas/sonja.jpg",
+
+                biografia:`
+Quem foi:
+Sonja Ashauer foi uma física brasileira e uma das pioneiras da Física no Brasil. Tornou-se a primeira mulher brasileira a estudar Física na Universidade de Cambridge, no Reino Unido, destacando-se por seu talento em uma época em que poucas mulheres tinham acesso ao ensino superior e à pesquisa científica.
+
+O que fez:
+• Foi a primeira brasileira a realizar estudos de Física na Universidade de Cambridge, uma das mais prestigiadas do mundo.
+• Desenvolveu pesquisas na área de Física Teórica e Mecânica Quântica.
+• Contribuiu para o fortalecimento da pesquisa científica brasileira ao representar o país em importantes centros internacionais.
+• Tornou-se um símbolo da participação feminina na Física brasileira.
+• Inspirou futuras gerações de mulheres a seguirem carreira nas Ciências Exatas.
+
+Dificuldades:
+• Enfrentou preconceitos por atuar em uma área quase totalmente dominada por homens.
+• Precisou superar as dificuldades enfrentadas por mulheres que buscavam formação científica no exterior durante a década de 1940.
+• Sua carreira foi interrompida precocemente devido à sua morte aos 25 anos, o que impediu que desenvolvesse todo o seu potencial científico.
+
+Prêmios e reconhecimentos:
+• É considerada uma das pioneiras da Física brasileira.
+• Seu nome é frequentemente lembrado em estudos sobre a participação feminina na ciência no Brasil.
+• Tornou-se uma referência histórica para mulheres que seguem carreira na Física.
+
+Curiosidade:
+Sonja Ashauer foi orientada pelo renomado físico britânico Paul Dirac, um dos criadores da Mecânica Quântica e vencedor do Prêmio Nobel de Física. Apesar de sua carreira ter sido muito curta, seu pioneirismo abriu caminho para que outras brasileiras buscassem formação científica em universidades de excelência no exterior.
+`
+            }
+
+        ],
+        "Minas Gerais":[
+
+            {
+                nome:"Beatriz Alvarenga Álvares",
+
+                area:"Física",
+
+                foto:"/static/imagens/cientistas/beatriz.jpg",
+
+                biografia:`
+Quem foi:
+Beatriz Alvarenga Álvares foi uma física, engenheira civil, professora e escritora brasileira. Considerada uma das maiores educadoras da Física no Brasil, dedicou sua carreira ao ensino da disciplina e à formação de milhares de estudantes. Foi professora da Universidade Federal de Minas Gerais (UFMG) e tornou-se referência nacional na educação científica.
+
+O que fez:
+• Foi uma das primeiras mulheres a se formar em Engenharia Civil pela Universidade Federal de Minas Gerais (UFMG).
+• Dedicou grande parte de sua vida ao ensino da Física, tornando a disciplina mais acessível aos estudantes.
+• Coautora da famosa coleção de livros didáticos "Física", utilizada por milhões de alunos do Ensino Médio em todo o Brasil.
+• Desenvolveu metodologias de ensino baseadas em experimentos e situações do cotidiano, aproximando a Física da realidade dos estudantes.
+• Formou diversas gerações de professores e contribuiu significativamente para a melhoria do ensino de Ciências no país.
+
+Dificuldades:
+• Enfrentou preconceitos por estudar Engenharia e Física em uma época em que poucas mulheres ingressavam nas Ciências Exatas.
+• Precisou conquistar respeito e reconhecimento em ambientes acadêmicos predominantemente masculinos.
+• Trabalhou constantemente para mudar a visão de que a Física era uma disciplina difícil e inacessível para os estudantes.
+
+Prêmios e reconhecimentos:
+• Recebeu o título de Professora Emérita da Universidade Federal de Minas Gerais (UFMG).
+• Foi homenageada por diversas instituições educacionais por sua contribuição ao ensino da Física.
+• É reconhecida como uma das educadoras que mais influenciaram o ensino de Física no Brasil.
+
+Curiosidade:
+Seus livros didáticos de Física são considerados alguns dos mais utilizados da história da educação brasileira e ajudaram milhões de estudantes a compreender a disciplina de forma mais prática e dinâmica. Beatriz Alvarenga continuou incentivando a educação científica até os últimos anos de sua vida, falecendo em 2023, aos 100 anos de idade.
+`
+            },
+            {
+                nome:"Helena Nader",
+
+                area:"Biomedicina",
+
+                foto:"/static/imagens/cientistas/helena.jpg",
+
+                biografia:`
+Quem é:
+Helena Bonciani Nader é uma biomédica, professora e pesquisadora brasileira, reconhecida internacionalmente por suas contribuições à glicobiologia. É professora da Universidade Federal de São Paulo (UNIFESP) e tornou-se a primeira mulher a presidir a Academia Brasileira de Ciências, sendo uma das maiores defensoras da pesquisa científica no Brasil.
+
+O que fez:
+• Desenvolveu importantes pesquisas na área da glicobiologia, estudando moléculas conhecidas como glicosaminoglicanos e sua relação com diversas doenças.
+• Contribuiu para avanços científicos nas áreas de biomedicina, farmacologia e bioquímica.
+• Publicou centenas de artigos científicos em revistas internacionais.
+• Formou dezenas de mestres, doutores e pesquisadores ao longo de sua carreira.
+• Atua na defesa da ciência, da educação e do investimento em pesquisa científica no Brasil.
+
+Dificuldades:
+• Enfrentou desafios para conquistar espaço em áreas da ciência historicamente dominadas por homens.
+• Precisou lidar com períodos de escassez de recursos para pesquisa e defender constantemente o financiamento da ciência brasileira.
+• Superou preconceitos relacionados à presença feminina em cargos de liderança científica.
+
+Prêmios e reconhecimentos:
+• Primeira mulher eleita presidente da Academia Brasileira de Ciências (ABC).
+• Recebeu a Grã-Cruz da Ordem Nacional do Mérito Científico.
+• É membro da Academia Mundial de Ciências (TWAS).
+• Recebeu diversos prêmios nacionais e internacionais por suas contribuições à Biomedicina.
+
+Curiosidade:
+Além de sua atuação como pesquisadora, Helena Nader tornou-se uma das principais porta-vozes da ciência brasileira, participando de debates públicos e defendendo políticas de incentivo à pesquisa, à inovação e à educação científica no país.
+`
+            },
+            {
+                nome:"Sônia Guimarães",
+
+                area:"Física",
+
+                foto:"/static/imagens/cientistas/sonia.jpg",
+
+                biografia:`
+Quem é:
+Sônia Guimarães é uma física, professora e pesquisadora brasileira, reconhecida como a primeira mulher negra doutora em Física no Brasil. Professora do Instituto Tecnológico de Aeronáutica (ITA), tornou-se uma das maiores referências nacionais em Física, Educação e inclusão de mulheres e pessoas negras nas ciências.
+
+O que fez:
+• Tornou-se a primeira mulher negra a obter o título de doutora em Física no Brasil.
+• Desenvolveu pesquisas na área de Física da Matéria Condensada, com foco em materiais semicondutores e microeletrônica.
+• Atua como professora do Instituto Tecnológico de Aeronáutica (ITA), uma das instituições de engenharia mais prestigiadas do país.
+• Incentiva a participação de mulheres e pessoas negras nas áreas de Ciência, Tecnologia, Engenharia e Matemática (STEM).
+• Participa de palestras, projetos educacionais e iniciativas voltadas para a divulgação científica e a igualdade de oportunidades.
+
+Dificuldades:
+• Enfrentou racismo e machismo durante sua formação acadêmica e ao longo de sua carreira científica.
+• Precisou superar preconceitos por ser mulher e negra em uma área historicamente dominada por homens.
+• Enfrentou barreiras para conquistar reconhecimento profissional, tornando-se um símbolo de representatividade na ciência brasileira.
+
+Prêmios e reconhecimentos:
+• Primeira mulher negra doutora em Física no Brasil.
+• Professora titular do Instituto Tecnológico de Aeronáutica (ITA).
+• Recebeu diversas homenagens por sua contribuição à Física, à educação e à promoção da diversidade na ciência.
+• É considerada uma das cientistas brasileiras mais influentes na defesa da inclusão e da igualdade de oportunidades.
+
+Curiosidade:
+Sônia Guimarães costuma afirmar que a ciência deve ser acessível a todas as pessoas, independentemente de gênero ou origem. Sua trajetória inspira milhares de jovens, especialmente meninas e estudantes negros, a seguirem carreira nas áreas científicas e tecnológicas.
+`
+            },
+            {
+                nome:"Nelma Baldin",
+
+                area:"Educação Científica",
+
+                foto:"/static/imagens/cientistas/nelma.jpg",
+
+                biografia:`
+Quem é:
+Nelma Baldin é uma educadora, pesquisadora e professora brasileira, reconhecida por suas contribuições para a Educação Científica, a formação de professores e a pesquisa em metodologias de ensino. Sua carreira é marcada pelo incentivo à alfabetização científica e ao desenvolvimento do pensamento crítico na educação.
+
+O que fez:
+• Desenvolveu pesquisas sobre Educação Científica e formação de professores.
+• Contribuiu para o aprimoramento das metodologias de ensino de Ciências no Brasil.
+• Publicou diversos artigos e livros voltados para educação, pesquisa e formação docente.
+• Incentivou práticas pedagógicas que aproximam os estudantes da investigação científica.
+• Formou professores e pesquisadores em programas de graduação e pós-graduação.
+
+Dificuldades:
+• Enfrentou desafios para fortalecer a pesquisa em Educação Científica, área que durante muitos anos recebeu menos investimentos que outras áreas da ciência.
+• Precisou conquistar reconhecimento em um ambiente acadêmico predominantemente masculino.
+• Defendeu continuamente a valorização da pesquisa e da formação de professores no Brasil.
+
+Prêmios e reconhecimentos:
+• Reconhecida por sua contribuição à pesquisa em Educação Científica.
+• Professora e pesquisadora em importantes instituições brasileiras.
+• Orientou diversos mestres e doutores ao longo de sua carreira.
+
+Curiosidade:
+Grande parte de suas pesquisas busca aproximar a ciência do cotidiano dos estudantes, mostrando que aprender Ciências vai muito além da memorização de conteúdos.
+`
+            },
+            {
+                nome:"Maria das Graças Foster",
+
+                area:"Engenharia Química",
+
+                foto:"/static/imagens/cientistas/mariagracas.jpg",
+
+                biografia:`
+Quem é:
+Maria das Graças Silva Foster é uma engenheira química brasileira e uma das maiores executivas da história da indústria de petróleo no Brasil. Tornou-se a primeira mulher a ocupar a presidência da Petrobras, sendo reconhecida internacionalmente por sua liderança no setor energético.
+
+O que fez:
+• Foi a primeira mulher a presidir a Petrobras.
+• Liderou importantes projetos de exploração e produção de petróleo, especialmente nas reservas do pré-sal.
+• Contribuiu para o desenvolvimento tecnológico da indústria petrolífera brasileira.
+• Atuou por mais de três décadas na Petrobras, ocupando diversos cargos técnicos e de gestão.
+• Tornou-se referência para mulheres nas áreas de engenharia e liderança empresarial.
+
+Dificuldades:
+• Enfrentou preconceitos por atuar em um setor historicamente dominado por homens.
+• Precisou conquistar espaço em cargos de liderança dentro da indústria petrolífera.
+• Durante sua gestão enfrentou desafios econômicos e administrativos em um dos períodos mais difíceis da empresa.
+
+Prêmios e reconhecimentos:
+• Primeira mulher presidente da Petrobras.
+• Eleita uma das mulheres mais influentes do mundo pela revista Forbes.
+• Recebeu diversas homenagens por sua contribuição à engenharia e à gestão empresarial.
+
+Curiosidade:
+Maria das Graças Foster começou sua carreira como estagiária na Petrobras e, ao longo de mais de 30 anos de dedicação, tornou-se presidente da maior empresa brasileira.
+`
+            }
+
+        ],
+        "Rio Grande do Sul":[
+
+            {
+                nome:"Thaisa Storchi Bergmann",
+
+                area:"Astrofísica",
+
+                foto:"/static/imagens/cientistas/thaisa.jpg",
+
+                biografia:`
+Quem é:
+Thaisa Storchi Bergmann é uma astrofísica brasileira, professora da Universidade Federal do Rio Grande do Sul (UFRGS) e uma das maiores especialistas do mundo em buracos negros supermassivos. É reconhecida internacionalmente por suas contribuições à astronomia e à astrofísica.
+
+O que fez:
+• Desenvolveu importantes pesquisas sobre buracos negros supermassivos localizados no centro das galáxias.
+• Demonstrou como esses buracos negros influenciam a formação e a evolução das galáxias.
+• Utiliza observações de grandes telescópios terrestres e espaciais para estudar o universo.
+• Publicou centenas de artigos científicos em revistas internacionais.
+• Formou diversas gerações de astrônomos e pesquisadores brasileiros.
+
+Dificuldades:
+• Enfrentou desafios para conquistar espaço em uma área historicamente dominada por homens.
+• Precisou competir internacionalmente pelo acesso aos maiores telescópios do mundo.
+• Trabalhou continuamente para ampliar a participação feminina na astronomia.
+
+Prêmios e reconhecimentos:
+• Laureada com o Prêmio L'Oréal-UNESCO para Mulheres na Ciência.
+• Membro da Academia Brasileira de Ciências.
+• Recebeu diversos prêmios nacionais e internacionais por suas pesquisas.
+
+Curiosidade:
+Grande parte de suas pesquisas utiliza dados do Telescópio Espacial Hubble e de alguns dos maiores observatórios astronômicos do planeta para estudar o comportamento dos buracos negros.
+`
+            },
+            {
+                nome:"Lélia Gonzalez",
+
+                area:"Antropologia",
+
+                foto:"/static/imagens/cientistas/lelia.jpg",
+
+                biografia:`
+Quem foi:
+Lélia Gonzalez foi uma antropóloga, filósofa, professora e escritora brasileira, considerada uma das maiores intelectuais do Brasil. Suas pesquisas revolucionaram os estudos sobre relações raciais, cultura afro-brasileira e os direitos das mulheres negras, tornando-se uma referência internacional nas Ciências Humanas.
+
+O que fez:
+• Desenvolveu importantes pesquisas sobre a cultura afro-brasileira e a formação da sociedade brasileira.
+• Criou o conceito de "Amefricanidade", destacando a influência africana e indígena na identidade da América Latina.
+• Publicou livros e artigos que se tornaram referências em Antropologia, Sociologia e Estudos Raciais.
+• Lutou pelos direitos das mulheres, da população negra e pela igualdade social.
+• Influenciou pesquisadores e movimentos sociais no Brasil e em diversos países.
+
+Dificuldades:
+• Enfrentou racismo e machismo durante toda a sua carreira acadêmica.
+• Precisou conquistar reconhecimento em universidades e espaços intelectuais historicamente dominados por homens brancos.
+• Muitas de suas ideias só passaram a receber amplo reconhecimento anos após sua morte.
+
+Prêmios e reconhecimentos:
+• É considerada uma das maiores intelectuais negras da história do Brasil.
+• Suas obras são estudadas em universidades brasileiras e internacionais.
+• Recebeu diversas homenagens póstumas por sua contribuição à Antropologia e aos estudos sobre igualdade racial e de gênero.
+
+Curiosidade:
+Lélia Gonzalez foi uma das primeiras pesquisadoras brasileiras a demonstrar como racismo e desigualdade de gênero atuam de forma conjunta na sociedade, influenciando profundamente os estudos sobre feminismo negro na América Latina.
+`
+            },
+            {
+                nome:"Lea Velho",
+
+                area:"Política Científica",
+
+                foto:"/static/imagens/cientistas/leav.jpg",
+
+                biografia:`
+                Quem é:
+
+                Engenheira agrônoma graduada pela Unesp, mestre em Agronomia e doutora em Política Científica e Tecnológica pelo prestigiado Science Policy Research Unit (SPRU) da University of Sussex, no Reino Unido.
+                Professora titular aposentada e atual docente colaboradora do Departamento de Política Científica e Tecnológica (DPCT) do Instituto de Geociências da Universidade Estadual de Campinas (Unicamp).
+                Uma das principais referências nacionais e latino-americanas no campo dos Estudos Sociais da Ciência e Tecnologia (CTS) e na formulação de políticas públicas de inovação.
+                
+                Principais Feitos:
+                
+                Estudos de Inovação e Redes: Tornou-se uma autoridade em analisar como os países em desenvolvimento se inserem em redes internacionais de pesquisa, investigando as relações de cooperação em áreas como a bioprospecção e o desenvolvimento de vacinas.
+                Avaliação de Políticas Públicas: Desenvolveu pesquisas críticas e metodologias rigorosas para avaliar a eficácia dos investimentos estatais em Ciência e Tecnologia (C&T), defendendo a autonomia científica e o fortalecimento de lideranças nacionais.
+                Atuação Internacional: Foi pesquisadora sênior e diretora de pós-graduação no Institute for New Technologies da Universidade das Nações Unidas (UNU-MERIT), na Holanda, onde liderou estudos sobre o impacto social das novas tecnologias.
+                Gênero na Ciência: Dedica-se ativamente a compreender a dinâmica de gênero nas instituições científicas, mapeando as barreiras estruturais que historicamente afastaram ou limitaram o avanço de mulheres nas áreas exatas e tecnológicas.
+                
+                Reconhecimento e Legado:
+                
+                Teve uma trajetória marcante no Conselho Nacional de Desenvolvimento Científico e Tecnológico (CNPq) como técnica de avaliação de projetos, ajudando a moldar a infraestrutura de fomento à pesquisa no país nas últimas décadas.
+                Autora de artigos referenciais sobre internacionalização, bibliometria e os conceitos sociológicos de ciência aplicados à governança tecnológica na América Latina.
+                Formou uma geração inteira de mestres, doutores e gestores públicos que hoje lideram agências de fomento, secretarias de inovação e núcleos de pesquisa pelo Brasil.
+                `
+            },
+            {
+                nome:"Claudia Bauzer Medeiros",
+
+                area:"Ciência da Computação",
+
+                foto:"/static/imagens/cientistas/claudia.jpg",
+
+                biografia:`
+              Quem é:
+              
+              Engenheira eletrotécnica graduada pela PUC-Rio, mestre em Informática pela mesma instituição e doutora em Ciência da Computação pela University of Waterloo, no Canadá.
+              Professora titular do Instituto de Computação da Universidade Estadual de Campinas (Unicamp).
+              Primeira mulher a presidir a Sociedade Brasileira de Computação (SBC), atuando na liderança de 2003 a 2007.
+              Uma das maiores referências do país em gestão de dados científicos e uma voz ativa no incentivo de mulheres nas ciências exatas.
+              
+              Principais Feitos:
+              
+              Pioneirismo em Geoinformática: Desenvolveu pesquisas de vanguarda no Brasil sobre sistemas de bancos de dados geográficos e ambientais, fundamentais para integrar dados de satélite e mapear ecossistemas complexos.
+              Aplicações Multidisciplinares: Criou soluções tecnológicas capazes de processar grandes volumes de informações heterogêneas, aplicando a computação diretamente em desafios do mundo real nas áreas de biodiversidade, agricultura e planejamento agroambiental.
+              Defesa da Ciência Aberta: Coordena as políticas de Ciência Aberta e Dados de Pesquisa Abertos na FAPESP, liderando a infraestrutura que interconecta repositórios científicos para democratizar e acelerar as descobertas acadêmicas no país.
+              Atuação Internacional: Atua como vice-coordenadora do Conselho do World Data System (WDS) e já integrou importantes comitês do International Science Council (ISC), ampliando a representatividade científica brasileira no exterior.
+              
+              Reconhecimento e Legado:
+              
+              Primeira pesquisadora da América Latina a receber o prestigiado prêmio internacional ACM Presidential Award da Association for Computing Machinery, a maior sociedade de computação do mundo.
+              Agraciada como Comendadora da Ordem Nacional do Mérito Científico e eleita membro titular da Academia Brasileira de Ciências (ABC).
+              Detentora de múltiplos títulos de Doctor Honoris Causa, concedidos por instituições globais como a Université Paris-Dauphine, na França.
+              Eleita Fellow da The World Academy of Sciences (TWAS) e condecorada com o Prêmio de Mérito Latino-Americano em Informática (CLEI).
+                `
+            },
+            {
+                nome:"Maria Cristina Bohn Martins",
+
+                area:"História da Ciência",
+
+                foto:"/static/imagens/cientistas/mariacristina.jpg",
+
+                biografia:`
+                Quem é:
+                
+                Historiadora, pesquisadora e professora titular da Universidade do Vale do Rio dos Sinos (Unisinos).
+                Mestre em História da Ibero-América pela Unisinos e doutora em História pela Pontifícia Universidade Católica do Rio Grande do Sul (PUCRS).
+                Coordenadora do Programa de Pós-Graduação em História da Unisinos e Bolsista de Produtividade em Pesquisa do CNPq.
+                Membro de instituições internacionais de prestígio, como a Société Internationale d'Études Jésuites (SIEJ), na França.
+                
+                Principais Feitos:
+                
+                História do Desenvolvimento Científico: Investiga a circulação de saberes, as práticas de conhecimento e as dinâmicas socioculturais que moldaram o desenvolvimento da ciência e da cultura na América Latina Colonial (séculos XVII e XVIII).
+                Missões Jesuíticas e Etnohistória: Coordena o grupo de pesquisa "Jesuítas nas Américas", analisando as missões como laboratórios de intercâmbio de conhecimentos botânicos, médicos, cartográficos e artísticos entre os religiosos e os povos nativos, como os Guaranis.
+                Resgate do Protagonismo Indígenas: Suas pesquisas pioneiras de micro-história trazem uma perspectiva "vista de baixo", comprovando que os saberes tradicionais indígenas transformaram a ciência e as crônicas coloniais americanas.
+                Reformismo e Ciência de Fronteira: Examina criticamente as medidas de modernização e o reformismo da monarquia espanhola em regiões como a Governação do Rio da Prata, conectando a política com a produção científica da época.
+                
+                Reconhecimento e Legado:
+                
+                Vencedora do tradicional Prêmio Anpuh-RS de Teses por sua destacada pesquisa sobre as dinâmicas sociais nas reduções coloniais.
+                Autora de livros e artigos de referência internacional voltados à formação de professores, como a obra didática "As sociedades indígenas, a história e a escola".
+                Dedicou décadas à docência, sendo mentora direta de gerações de mestres e doutores em História da América e historiografia no Brasil.
+                `
+            }
+
+        ],
+        "Paraná":[
+
+            {
+                nome:"Enedina Alves Marques",
+
+                area:"Engenharia Civil",
+
+                foto:"/static/imagens/cientistas/enedina.jpg",
+
+                biografia:`
+                Quem foi:
+                
+                Neta de escravizados, filha de um lavrador e de uma empregada doméstica. 
+                Trabalhou como professora normalista, doméstica e babá para custear os próprios estudos.
+                Primeira mulher a se formar em engenharia no estado do Paraná e a primeira engenheira negra do Brasil, graduando-se em 1945 pela Universidade Federal do Paraná (UFPR).
+                Única mulher em uma turma de 32 homens brancos, superando as intensas barreiras do racismo e do machismo estruturais da época.
+                
+                Principais Feitos:
+                
+                Usina Capivari-Cachoeira: Teve atuação destacada e pioneira no desenvolvimento do Plano Hidrelétrico do Paraná, sendo peça-chave no projeto e na fiscalização das obras da Usina Capivari-Cachoeira (atualmente Usina Parigot de Souza), a maior central hidrelétrica subterrânea do Sul do país.
+                Liderança Firme no Canteiro: Conquistou o respeito em um ambiente majoritariamente masculino e hostil por sua forte imposição profissional.
+                Relatos históricos apontam que ela chegava a portar uma arma na cintura para se fazer ouvir e garantir a disciplina operacional dos operários.
+                Desenvolvimento Regional: Atuou no Departamento Estadual de Águas e Energia Elétrica (DAEE), realizando levantamentos topográficos complexos, calculando e fiscalizando a construção de várias pontes e estradas estaduais, além de coordenar a edificação de prédios de grupos escolares públicos.
+                Serviço Público Histórico: Tornou-se a primeira mulher a chefiar a Divisão de Engenharia da Secção de Estatística do Estado do Paraná.
+                
+                Reconhecimento e Legado:
+                
+                Teve sua trajetória homenageada nacionalmente pelo Google e inspirou a criação do Prêmio Enedina Alves Marques pelo Crea-PR, que valoriza o protagonismo feminino na engenharia.
+                Eternizada com uma estátua de bronze em tamanho real instalada na icônica Rua 15 de Novembro, no centro de Curitiba.
+                Inscrita no Livro dos Heróis e Heroínas da Pátria, consolidando-se como um dos maiores símbolos históricos de resistência, superação e pioneirismo técnico do Brasil.
+                `
+            },
+            {
+                nome:"Roseli de Deus Lopes",
+
+                area:"Engenharia Elétrica",
+
+                foto:"/static/imagens/cientistas/roseli.jpg",
+
+                biografia:`
+                Quem é:
+                
+                Engenheira eletrônica e cientista, com mestrado, doutorado e livre-docência pela Escola Politécnica da USP (EP-USP).
+                Primeira Professora Titular concursada na área de Educação em Engenharia da Poli-USP.Diretora do prestigiado Instituto de Estudos Avançados da USP (IEA-USP).
+                Pesquisadora sênior do Laboratório de Sistemas Integráveis (LSI) da USP desde 1988.
+                
+                Principais Feitos:
+                
+                Criação da FEBRACE: É a idealizadora e coordenadora geral da Feira Brasileira de Ciências e Engenharia (FEBRACE), a maior mostra científica para jovens estudantes da Educação Básica e Técnica do país, que mobiliza milhares de escolas anualmente.
+                Robótica e Tecnologias Educacionais: Lidera pesquisas de vanguarda no desenvolvimento de robótica educacional, plataformas de hardware livre e na implementação de espaços maker focados em Internet das Coisas (IoT) voltados para escolas públicas.
+                Método Investigativo: Dedica sua carreira para provar que a iniciação científica e o aprendizado prático por projetos transformam a educação básica, estimulando a criatividade e revelando novos talentos tecnológicos em regiões vulneráveis.
+                Tecnologias para a Saúde: Atua ativamente no desenho de sistemas eletrônicos complexos e tecnologias assistivas interativas voltadas para a acessibilidade e melhoria da saúde humana.
+                
+                Reconhecimento e Legado:
+                
+                Membro do Conselho de Desenvolvimento Econômico Social Sustentável da Presidência da República.
+                Vencedora do prêmio Personalidade da Tecnologia (na categoria Educação) concedido pelo Sindicato dos Engenheiros no Estado de São Paulo (SEESP).
+                Agraciada internacionalmente com o Prêmio Mercosul de Ciência e Tecnologia e o Prêmio Peter Muranyi por suas contribuições científicas e de inclusão social.
+                `
+            },
+            {
+                nome:"Marcia Barbosa",
+
+                area:"Físicas",
+
+                foto:"/static/imagens/cientistas/mariabarbosa.jpg",
+
+                biografia:`
+                Quem é: 
+                
+                Física teórica, pesquisadora e atual reitora da Universidade Federal do Rio Grande do Sul (UFRGS).
+                Membro titular da Academia Brasileira de Ciências (ABC) e da Academia Mundial de Ciências (TWAS).
+                Ativista histórica no combate ao assédio e pela igualdade de gênero, diversidade e inclusão de mulheres nas ciências exatas.
+                Ex-chefe da Secretaria de Políticas Públicas e Programas Estratégicos do Ministério da Ciência, Tecnologia e Inovação (MCTI).
+                
+                Principais Feitos:
+                
+                Anomalias da Água: Ganhou projeção global ao estudar o comportamento incomum e as propriedades moleculares da água, mapeando mais de 70 "anomalias" estruturais da substância.
+                Dessalinização e Filtros: Desenvolveu pesquisas pioneiras utilizando nanotubos de carbono para filtrar a água e separar o sal de forma ultraeficiente, abrindo caminhos viáveis para gerar mais água potável no planeta.
+                Biomedicina: Seus modelos teóricos sobre as moléculas de água ajudaram a entender a dinâmica do dobramento de proteínas, um processo crucial para o avanço nos tratamentos de doenças degenerativas.
+                
+                Reconhecimento e Legado:
+                
+                Vencedora do prestigiado prêmio internacional L'Oréal-UNESCO para Mulheres na Ciência em 2013.
+                Agraciada com a Medalha Nicholson pela American Physical Society (APS) devido à sua forte atuação pelos direitos das mulheres no ambiente acadêmico.
+                Eleita pela revista Forbes como uma das brasileiras que mais transformam a ciência no país e no mundo.
+                Considerada pela ONU Mulheres como uma das cientistas que mudaram o mundo por meio do conhecimento.
+                `
+            },
+            {
+                nome:"Carmen Pimentel",
+
+                area:"Biologia",
+
+                foto:"/static/imagens/cientistas/carmen.jpg",
+
+                biografia:`
+               Quem é:
+               
+               Bióloga e pesquisadora brasileira dedicada às ciências ambientais.
+               Especialista no estudo de ecossistemas tropicais e na preservação de recursos naturais.
+               Atua ativamente na docência, coordenação de projetos acadêmicos e em conselhos editoriais de publicações científicas multidisciplinares.
+               
+               Principais Feitos:
+               
+               Pesquisas em Biodiversidade: Conduz e participa de estudos focados no mapeamento de indicadores ambientais, avaliando os impactos humanos sobre a fauna e a flora regionais.
+               Conservação de Ecossistemas: Dedica-se à investigação de ecossistemas vulneráveis, desenvolvendo estratégias ecológicas para mitigar a degradação de solos, matas e bacias hidrográficas.
+               Sustentabilidade Aplicada: Atua na análise e implementação de práticas sustentáveis e de conservação biológica, auxiliando na criação de relatórios que servem de base para políticas públicas de proteção ambiental.
+               Disseminação do Conhecimento: Integra conselhos de revisão de literatura científica nacional e internacional, avaliando e impulsionando a publicação de novos estudos sobre as ciências do mar, ecologia do Cerrado e dinâmica dos biomas brasileiros.
+               
+               Reconhecimento e Legado:
+               
+               Reconhecida por sua forte atuação na formação de novos pesquisadores e na defesa da preservação biológica frente às mudanças climáticas e ao desmatamento.
+               Ampla contribuição editorial científica, ajudando a disseminar pesquisas de ponta sobre biologia, saúde e biodiversidade ao redor do país.
+                `
+            },
+            {
+                nome:"Lygia da Veiga Pereira",
+
+                area:"Genética",
+
+                foto:"/static/imagens/cientistas/lygia.jpg",
+
+                biografia:`
+                Quem é:
+                
+                Física, mestre em Biofísica pela UFRJ e doutora em Ciências Biomédicas pelo Mount Sinai Medical Center (Nova York).
+                Professora titular e chefe do Departamento de Genética e Biologia Evolutiva da Universidade de São Paulo (USP).
+                Chefe do Laboratório Nacional de Células-Tronco Embrionárias (LaNCE-USP).
+                Uma das geneticistas mais renomadas e influentes do Brasil.
+                
+                Principais Feitos:
+                
+                Pioneirismo em Células-Tronco: Desenvolveu em 2008 a primeira linhagem brasileira de células-tronco embrionárias humanas (BR-1) obtida em laboratório nacional.
+                Independência Científica: Ao criar células made in Brazil, livrou os pesquisadores do país da dependência de importações, acelerando as pesquisas nacionais de terapia celular.
+                Modelos Transgênicos: Integrou a equipe responsável por gerar o primeiro camundongo transgênico do Brasil, essencial para o estudo de doenças genéticas raras como a Síndrome de Marfan.
+                Projeto DNA do Brasil: Lançou em 2019 e coordena o maior estudo genômico da população brasileira, mapeando a nossa miscigenação para incluir o país na era da medicina de precisão personalizada.
+                Empreendedorismo Científico: Fundou a startup de biotecnologia Gen-t, focada em construir um banco de dados de saúde e sequenciamento de DNA focado na diversidade da população brasileira.
+                
+                Reconhecimento e Legado:
+                
+                Homenageada internacionalmente com o Prêmio de Serviço Público da International Society for Stem Cell Research (ISSCR) por seu trabalho de promoção às ciências celulares.
+                Eleita uma das 100 personalidades mais influentes do Brasil pelas revistas IstoÉ e Época.
+                Autora de obras fundamentais de divulgação científica voltadas ao grande público, como os livros "Sequenciaram o genoma humano, e agora?" e "Células-tronco: promessas e realidades".
+                `
+            }
+
+        ],
+        "Espírito Santo":[
+
+            {
+                nome:"Anamaria de Moraes",
+
+                area:"Ergonomia",
+
+                foto:"/static/imagens/cientistas/anamaria.jpg",
+
+                biografia:`
+                Quem Foi:
+
+                Designer, historiadora, pesquisadora e professora universitária brasileira.
+                Professora titular do Departamento de Artes & Design da PUC-Rio e docente histórica da Esdi/UERJ.
+                Mestre em Engenharia de Produção e Doutora em Comunicação pela UFRJ.
+                Considerada uma das maiores e mais influentes autoridades em Ergonomia no Brasil.
+                
+                Principais Feitos:
+                
+                Pioneirismo no Ergodesign: Consolidou a fusão entre Design e Ergonomia no cenário nacional, criando metodologias que adaptaram produtos e sistemas industriais às capacidades e necessidades físicas e cognitivas do ser humano.
+                Interação Humano-Computador (IHC): Desenvolveu estudos de vanguarda no Brasil sobre a usabilidade de interfaces digitais, avaliando a facilidade e a eficiência com que as pessoas operavam computadores e sistemas de informação.
+                Liderança Científica: Presidiu a Associação Brasileira de Ergonomia (Abergo) e foi uma das principais mentoras e criadoras de periódicos científicos essenciais do setor, como a Revista Estudos em Design.
+                Impacto na Metodologia: O método de avaliação ergonômica construído por ela (em parceria com Cláudia Mont'Alvão) redefiniu a forma como pesquisas acadêmicas e diagnósticos de postos de trabalho passaram a ser feitos no país.
+                
+                Reconhecimento e Legado:
+                
+                Eleita e homenageada como a melhor docente na área de Ergonomia pela Universidade Estadual Paulista (Unesp).
+                Autora de livros didáticos fundamentais utilizados em universidades de todo o país, como "Ergonomia: Conceitos e Aplicações".
+                Formou e orientou toda uma geração de pesquisadores, mestres e doutores que hoje lideram a área de usabilidade e fatores humanos no Brasil.
+                `
+            },
+            {
+                nome:"Celina Turchi",
+
+                area:"Epidemiologia",
+
+                foto:"/static/imagens/cientistas/celina.jpg",
+
+                biografia:`
+                Quem é: 
+
+                Médica e epidemiologista goiana, mestre pela London School of Hygiene and Tropical Medicine e doutora pela Universidade de São Paulo (USP).
+                Pesquisadora convidada do Instituto Aggeu Magalhães, unidade da Fundação Oswaldo Cruz em Pernambuco (Fiocruz-PE).
+                Professora emérita aposentada da Universidade Federal de Goiás (UFG).
+                
+                Principais Feitos:
+                
+                Descoberta do Zika e Microcefalia: Coordenou a força-tarefa global e o Grupo de Pesquisa de Epidemia em Microcefalia (MERG) que comprovou a relação inédita entre a infecção pelo vírus Zika em gestantes e a má-formação congênita em bebês.
+                Liderança em Crise Sanitária: Mobilizou rapidamente uma rede multidisciplinar de médicos, biólogos e pesquisadores no Recife (epicentro da epidemia em 2015) para desvendar o surto misterioso.
+                Investigação Epidemiológica: Superou a falta de testes laboratoriais confiáveis na época através de estudos de caso-controle rigorosos, fornecendo as evidências que fundamentaram o alerta global da OMS.
+                
+                Reconhecimento e Legado:
+                
+                Eleita pela prestigiosa revista Nature como uma das 10 cientistas mais importantes do mundo em 2016, recebendo o título de "Zika Detective".
+                Escolhida pela revista Time como uma das 100 pessoas mais influentes do mundo em 2017.
+                Membro titular da Academia Brasileira de Ciências (ABC) e também eternizada na infância dos brasileiros como personagem do projeto "Donas da Rua", da Turma da Mônica.
+                `
+            },
+            {
+                nome:"Margareth Dalcolmo",
+
+                area:"Pneumologia",
+
+                foto:"/static/imagens/cientistas/margareth.jpg",
+
+                biografia:`
+                Quem é: 
+                
+                Médica pneumologista e pesquisadora sênior da Fundação Oswaldo Cruz (Fiocruz).
+                Professora adjunta da Pontifícia Universidade Católica do Rio de Janeiro (PUC-Rio).
+                Ex-presidente da Sociedade Brasileira de Pneumologia e Tisiologia (SBPT).
+                Tornou-se uma das principais vozes de esclarecimento e divulgação científica para a população brasileira durante a crise sanitária global.
+                
+                Principais Feitos: 
+
+                Enfrentamento à COVID-19: Conduziu ensaios clínicos essenciais no país e participou ativamente de comitês de formulação de políticas públicas.
+                Combate à Tuberculose: É uma das principais referências globais na área, coordenando investigações para novos tratamentos em parceria com o National Institutes of Health (NIH) e a Global Alliance for TB Research.
+                Atuação Internacional: Atua como consultora da Organização Mundial da Saúde (OMS) e integra conselhos de saúde voltados ao controle de doenças respiratórias.
+                Defesa da Vacinação: Nomeada pelo Ministério da Saúde como embaixadora do movimento nacional pela imunização.
+                
+                Reconhecimento e Legado:
+
+                Eleita membro titular da Academia Nacional de Medicina (ANM), tornando-se uma das poucas mulheres na história a ocupar uma cadeira de imortal na instituição.
+                Vencedora do tradicional Prêmio Jabuti com o livro "Um tempo para não esquecer", obra literária e científica que reflete sobre a pandemia.
+                Perfilada pela prestigiada revista científica The Lancet Respiratory Medicine como o "rosto da COVID-19" no Brasil por seu papel humanitário.
+                `
+            },
+            {
+                nome:"Jaqueline Goes de Jesus",
+
+                area:"Biomedicina",
+
+                foto:"/static/imagens/cientistas/jaqueline.jpg",
+
+                biografia:`
+               Quem é:
+               
+               Biomédica, doutora em Patologia Humana pela UFBA em parceria com a Fiocruz Bahia.
+               Professora efetiva do Instituto de Ciências Biomédicas da Universidade de São Paulo (USP).
+               Uma das principais vozes da divulgação científica no Brasil e defensora da representatividade negra e feminina na academia.
+
+               Principais Feitos:
+
+               Sequenciamento do SARS-CoV-2: Coordenou a equipe que mapeou o genoma do coronavírus na América Latina em apenas 48 horas após a confirmação do primeiro caso no Brasil.
+               Vigilância de surtos: Participou ativamente do sequenciamento genético do Zika vírus durante a epidemia de 2015-2016 e pesquisa a evolução de arbovírus como Dengue e Chikungunya.
+               Impacto na saúde: O rastreamento ágil feito por sua equipe permitiu entender as mutações do vírus em tempo real, ajudando a diferenciar a cepa brasileira da original de Wuhan.
+               Incentivo social: Fundou o Instituto Jaqueline Goes, voltado para apoiar e inserir mais meninas e mulheres no universo da pesquisa científica.
+
+               Reconhecimento e Legado:
+
+               Nomeada Embaixadora da Ciência no Brasil pelo Ministério da Ciência, Tecnologia e Inovação (MCTI).
+               Eleita uma das 20 mulheres de sucesso do Brasil pela prestigiada revista Forbes em 2022.
+               Homenageada pelo projeto "Donas da Rua" (da Turma da Mônica) e escolhida internacionalmente pela fabricante Mattel para ser eternizada com uma boneca Barbie Cientista.
+                `
+            },
+            {
+                nome:"Ester Sabino",
+
+                area:"Medicina",
+
+                foto:"/static/imagens/cientistas/ester.jpg",
+
+                biografia:`
+                 Quem é:
+
+                Médica e imunologista brasileira.
+                Professora associada da Faculdade de Medicina da USP.
+                Ex-diretora do Instituto de Medicina Tropical da USP.
+
+                 Principais Feitos:
+
+                Sequenciamento do SARS-CoV-2: Liderou a equipe que mapeou o genoma do coronavírus em apenas 48 horas após o primeiro caso no Brasil.
+                Agilidade pioneira: Reduziu um processo que demorava 15 dias no restante do mundo, acelerando o desenvolvimento de testes diagnósticos.
+                Pesquisa de epidemias: Coordenou estudos de ponta sobre a evolução e transmissão dos vírus HIV, Zika, Dengue e Chikungunya.
+                Doenças negligenciadas: Dedicou décadas de pesquisa ao avanço dos tratamentos da Doença de Chagas e da anemia falciforme.
+
+                 Reconhecimento e Legado:
+
+                Membro titular da Academia Brasileira de Ciências (ABC).
+                Nomeou o "Prêmio Ester Sabino", criado pelo governo de SP para incentivar mulheres na ciência.
+                `
+            }
+
+        ]
+
+    },
+
+    "Estados Unidos":{
+
+        "Califórnia":[
+
+            {
+                nome:"Sally Ride",
+
+                area:"Física e Astronáutica",
+
+                foto:"/static/imagens/cientistas/sally-ride.jpg",
+
+                biografia:`
+                Quem Foi:
+                
+                • Astrofísica, física teórica e astronauta norte-americana.
+                • Mestre e doutora em Física pela Stanford University, pesquisando a interação de raios-X no meio interestelar.
+                • A pioneira do espaço: Em 1983, tornou-se a primeira mulher americana (e a terceira do mundo) a viajar para o espaço.
+                
+                Principais Feitos:
+                
+                • Missões Espaciais Históricas: Integrou a tripulação das missões STS-7 e STS-41-G a bordo do ônibus espacial Challenger, operando de forma pioneira o braço robótico do veículo para implantar satélites.
+                • Investigação de Acidentes: Foi a única pessoa a participar das duas comissões presidenciais de investigação de desastres da NASA (os acidentes da Challenger em 1986 e do Columbia em 2003).
+                • Fundação Sally Ride Science: Criou sua própria instituição focada em criar conteúdos educacionais inovadores, programas de treinamento de professores e feiras de ciências para engajar estudantes.
+                • Incentivo ao STEM: Dedicou décadas de sua vida pós-NASA escrevendo livros de ciência para crianças e liderando projetos nacionais para inspirar meninas a seguirem carreiras em exatas e tecnologia.
+                
+                Desafios Enfrentados:
+                
+                •Sexismo Institucional e da Mídia: Enfrentou intensas barreiras culturais em uma profissão militarizada e dominada por homens. Durante o treinamento, a imprensa fez perguntas invasivas sobre sua vida pessoal, se o espaço afetaria seus órgãos reprodutivos ou se ela chorava quando as coisas davam errado no simulador.
+                `
+            },
+            
+            {
+                nome:"Jennifer Doudna",
+
+                area:"Bioquímica",
+
+                foto:"/static/imagens/cientistas/jennifer-doudna.jpg",
+
+                biografia:`
+                Quem É: 
+                
+                • Bioquímica norte-americana, doutora em Química Biológica e Farmacologia Molecular pela Harvard Medical School.
+                • Professora titular da cadeira Li Ka Shing de Ciências Biomédicas na University of California, Berkeley.
+                • Investigadora sênior do Howard Hughes Medical Institute (HHMI).Principais FeitosRevolução do CRISPR-Cas9: Co-descobriu (junto com Emmanuelle Charpentier) uma ferramenta de edição genética ultraprecisa baseada em um mecanismo de defesa de bactérias. A tecnologia funciona como uma "tesoura molecular" capaz de reescrever o DNA de organismos vivos.
+                • Transformação da Medicina: Sua descoberta acelerou drasticamente as pesquisas biotecnológicas mundiais, abrindo caminhos reais para a cura de doenças genéticas hereditárias, terapias inovadoras contra o câncer e engenharia de alimentos.
+                • Liderança em Ética Científica: Tornou-se uma das líderes globais no debate sobre o uso responsável e ético da edição genética em humanos, coordenando painéis internacionais de governança biotecnológica.
+                
+                Desafios Enfrentados:
+
+                • Disparidade de Gênero e Disputas: Precisou se firmar na elite da pesquisa em biotecnologia, uma área mercadológica agressiva de patentes onde a liderança de mulheres frequentemente sofria tentativas de apagamento.
+                
+                Reconhecimento:
+                
+                • Prêmio Nobel de Química em 2020, feito histórico por ser a primeira vez que duas mulheres dividiram o prêmio sem co-autores masculinos.
+                `
+            },
+
+            {
+                nome:"Frances Arnold",
+
+                area:"Engenharia Química",
+
+                foto:"/static/imagens/cientistas/frances-arnold.jpg",
+
+                biografia:`
+                Quem É:
+                
+                • Engenheira mecânica, aeroespacial e doutora em Engenharia Química pela University of California, Berkeley.
+                • Professora titular Linus Pauling de Engenharia Química, Bioengenharia e Bioquímica no California Institute of Technology (Caltech).
+                • Co-diretora do Centro de Bioengenharia do Caltech.
+                
+                Principais Feitos: 
+                
+                • Evolução Dirigida de Enzimas: Desenvolveu um método revolucionário que mimetiza os princípios da seleção natural em laboratório para forçar a evolução acelerada de proteínas e enzimas.
+                • Criação de Catalisadores Verdes: Suas enzimas customizadas substituíram processos químicos altamente tóxicos em indústrias globais, permitindo a fabricação sustentável de biocombustíveis, produtos farmacêuticos e materiais ecológicos.
+                • Empreendedorismo Tecnológico: Fundou startups de biotecnologia focadas na criação de alternativas sustentáveis para a agricultura e aviação, gerando produtos menos poluentes para o mercado global.
+                
+                Desafios Enfrentados:
+                
+                • Rompendo Barreiras nas Ciências Exatas: Construiu sua trajetória acadêmica enfrentando o isolamento de ser uma das poucas mulheres em salas de aula e laboratórios de engenharia pesada na década de 1970 e 1980.
+                
+                Reconhecimento: 
+                
+                • Prêmio Nobel de Química em 2018, tornando-se a quinta mulher na história a receber a honraria nessa categoria.
+                `
+            },
+
+            {
+                nome:"Elizabeth Blackburn",
+
+                area:"Biologia Molecular",
+
+                foto:"/static/imagens/cientistas/elizabeth-blackburn.jpg",
+
+                biografia:`
+                Quem é:
+Pesquisadora da Universidade da Califórnia.
+
+O que fez:
+
+Descobriu os telômeros e a enzima telomerase.
+Nobel de Medicina em 2009.
+
+Dificuldades:
+Enfrentou dificuldades para obter financiamento no início da carreira.
+                `
+            },
+
+            {
+                nome:"Joan Roughgarden",
+
+                area:"Ecologia",
+
+                foto:"/static/imagens/cientistas/joan-roughgarden.jpg",
+
+                biografia:`
+                Quem é:
+Professora da Universidade Stanford.
+
+O que fez:
+
+Pesquisas sobre biodiversidade e evolução.
+Referência em ecologia marinha.
+
+Dificuldades:
+Superou preconceitos relacionados à identidade de gênero durante sua carreira.
+                `
+            }
+
+
+        ],
+
+        "Texas":[
+
+            {
+                nome:"Helen Edwards",
+
+                area:"Física",
+
+                foto:"/static/imagens/cientistas/helen-edwards.jpg",
+
+                biografia:`
+                Quem foi:
+Pioneira em aceleradores de partículas.
+
+O que fez:
+
+Trabalhou no Fermilab.
+Desenvolveu tecnologias para colisores de partículas.
+
+Dificuldades:
+Poucas mulheres atuavam na física experimental.
+                `
+            },
+            
+            {
+                nome:"Mildred Dresselhaus",
+
+                area:"Física",
+
+                foto:"/static/imagens/cientistas/mildred-dresselhaus.jpg",
+
+                biografia:`
+                Quem foi:
+Conhecida como a "Rainha da Ciência do Carbono".
+
+O que fez:
+
+Pesquisas sobre nanotecnologia.
+Referência mundial em materiais.
+
+Dificuldades:
+Enfrentou desigualdade de oportunidades na academia.
+                `
+            },
+
+            {
+                nome:"Nancy Grace Roman",
+
+                area:"Astronomia",
+
+                foto:"/static/imagens/cientistas/nancy-grace-roman.jpg",
+
+                biografia:`
+                Quem foi:
+Primeira chefe de astronomia da NASA.
+
+O que fez:
+
+Liderou projetos que originaram o Telescópio Espacial Hubble.
+
+Dificuldades:
+Foi desencorajada a estudar astronomia por ser mulher.
+                `
+            },
+
+            {
+                nome:"Bonnie J. Dunbar",
+
+                area:"Engenharia",
+
+                foto:"/static/imagens/cientistas/bonnie-j-dunbar.jpg",
+
+                biografia:`
+                O que fez:
+ 
+Participou de cinco missões espaciais.
+
+Dificuldades:
+Competiu em um ambiente altamente masculino.
+                `
+            },
+
+            {
+                nome:"Shirley Ann Jackson",
+
+                area:"Física",
+
+                foto:"/static/imagens/cientistas/shirley-ann-jackson.jpg",
+
+                biografia:`
+                O que fez:
+
+Pesquisas em telecomunicações.
+Primeira mulher negra doutora pelo MIT.
+
+Dificuldades:
+Enfrentou racismo e machismo durante toda a carreira.
+                `
+            }
+
+
+        ],
+
+        "Flórida":[
+
+            {
+                nome:"Jane Goodall",
+
+                area:"Primatologia e Etologia",
+
+                foto:"/static/imagens/cientistas/jane-goodall.jpg",
+
+                biografia:`
+                Quem foi/é:
+Jane Goodall é uma primatóloga, antropóloga e conservacionista britânica, reconhecida mundialmente pelos seus estudos sobre chimpanzés. Seu trabalho revolucionou a forma como os cientistas compreendem o comportamento dos primatas.
+
+Principais contribuições:
+
+Realizou mais de 60 anos de pesquisas sobre chimpanzés.
+Descobriu que os chimpanzés fabricam e utilizam ferramentas, algo que antes era considerado exclusivo dos seres humanos.
+Criou o Instituto Jane Goodall, dedicado à conservação da natureza e à educação ambiental.
+Inspirou pesquisas sobre comportamento animal em todo o mundo.
+
+Dificuldades enfrentadas:
+
+No início da carreira, foi desacreditada por não possuir formação universitária em zoologia.
+Enfrentou preconceitos por ser mulher em uma área dominada por homens.
+Precisou superar críticas por utilizar nomes, em vez de números, para identificar os chimpanzés estudados.
+
+Prêmios e reconhecimentos:
+
+Mensageira da Paz das Nações Unidas.
+Medalha Hubbard da National Geographic.
+Ordem do Império Britânico.
+                `
+            },
+            
+            {
+                nome:"Mae Jemison",
+
+                area:"Medicina, Engenharia e Astronáutica",
+
+                foto:"/static/imagens/cientistas/mae-jemison.jpg",
+
+                biografia:`
+                Quem foi/é:
+Mae Jemison é médica, engenheira e astronauta. Em 1992 tornou-se a primeira mulher negra a viajar para o espaço, participando da missão STS-47 da NASA.
+
+Principais contribuições:
+
+Participou de pesquisas científicas em órbita.
+Desenvolveu projetos voltados para tecnologia e saúde.
+Incentiva jovens, principalmente meninas, a seguirem carreiras científicas.
+Atua em projetos de inovação e exploração espacial.
+
+Dificuldades enfrentadas:
+
+Enfrentou preconceitos relacionados ao gênero e à raça.
+Precisou superar a baixa representatividade de mulheres negras na ciência e na NASA.
+
+Prêmios e reconhecimentos:
+
+National Women's Hall of Fame.
+NASA Space Flight Medal.
+Diversos doutorados honorários.
+                `
+            },
+
+            {
+                nome:"Susan Solomon",
+
+                area:"Química Atmosférica",
+
+                foto:"/static/imagens/cientistas/susan-solomon.jpg",
+
+                biografia:`
+               Quem foi/é:
+Susan Solomon é uma das maiores especialistas mundiais em química atmosférica e mudanças climáticas.
+
+Principais contribuições:
+
+Demonstrou que os clorofluorcarbonos (CFCs) eram responsáveis pela destruição da camada de ozônio na Antártida.
+Suas pesquisas contribuíram diretamente para o Protocolo de Montreal.
+Tornou-se referência mundial em estudos sobre aquecimento global.
+
+Dificuldades enfrentadas:
+
+Iniciou a carreira em uma época em que havia poucas mulheres na pesquisa em ciências atmosféricas.
+Precisou conquistar espaço em expedições científicas internacionais.
+
+Prêmios e reconhecimentos:
+
+National Medal of Science.
+Crafoord Prize.
+BBVA Frontiers of Knowledge Award.
+                `
+            },
+
+            {
+                nome:"Kathryn Sullivan",
+
+                area:"Geologia e Astronáutica",
+
+                foto:"/static/imagens/cientistas/kathryn-sullivan.jpg",
+
+                biografia:`
+                Quem foi/é:
+Kathryn Sullivan é geóloga, oceanógrafa e astronauta da NASA.
+
+Principais contribuições:
+
+Primeira mulher norte-americana a realizar uma caminhada espacial, em 1984.
+Participou do desenvolvimento de instrumentos para observação da Terra.
+Liderou pesquisas sobre oceanos e mudanças ambientais.
+Também se tornou a primeira mulher a alcançar o ponto mais profundo do oceano após ter ido ao espaço.
+
+Dificuldades enfrentadas:
+
+Enfrentou preconceitos por atuar em áreas tradicionalmente masculinas.
+Precisou provar sua capacidade em missões altamente competitivas da NASA.
+
+Prêmios e reconhecimentos:
+
+NASA Distinguished Service Medal.
+NASA Space Flight Medal.
+National Aviation Hall of Fame.
+                `
+            },
+
+            {
+                nome:"Sandra Magnus",
+
+                area:"Engenharia e Astronáutica",
+
+                foto:"/static/imagens/cientistas/sandra-magnus.jpg",
+
+                biografia:`
+                Quem foi/é:
+Sandra Magnus é engenheira e astronauta da NASA, reconhecida por suas contribuições para a exploração espacial e para o desenvolvimento da Estação Espacial Internacional.
+
+Principais contribuições:
+
+Participou de três missões espaciais.
+Permaneceu vários meses vivendo e trabalhando na Estação Espacial Internacional.
+Conduziu experimentos científicos em microgravidade nas áreas de biologia, física e engenharia.
+Trabalhou no desenvolvimento de tecnologias para futuras missões espaciais.
+
+Dificuldades enfrentadas:
+
+Enfrentou desafios por atuar em uma carreira predominantemente masculina.
+Precisou superar treinamentos extremamente rigorosos para ingressar na NASA.
+
+Prêmios e reconhecimentos:
+
+NASA Distinguished Service Medal.
+NASA Space Flight Medal.
+Diversas homenagens por sua contribuição à exploração espacial.
+                `
+            }
+
+
+        ],
+
+        "Massachusetts":[
+
+            {
+                nome:"Rosalind Picard",
+
+                area:"Ciência da Computação e Engenharia Biomédica",
+
+                foto:"/static/imagens/cientistas/rosalind-picard.jpg",
+
+                biografia:`
+                Quem é:
+Rosalind Picard é cientista da computação, engenheira e professora do MIT. É reconhecida mundialmente por criar a área da Computação Afetiva, que estuda como computadores podem reconhecer, interpretar e responder às emoções humanas.
+
+Principais contribuições:
+
+Criou a Computação Afetiva (Affective Computing).
+Desenvolveu tecnologias para reconhecimento de emoções por inteligência artificial.
+Criou sensores capazes de detectar crises epilépticas por meio de sinais fisiológicos.
+Fundou empresas voltadas para tecnologias de saúde.
+
+Dificuldades enfrentadas:
+
+Enfrentou preconceitos por ser mulher na área de tecnologia.
+Precisou defender uma área considerada "não convencional" quando iniciou suas pesquisas.
+
+Prêmios e reconhecimentos:
+
+Fellow do IEEE.
+Fellow da American Association for Artificial Intelligence.
+Diversos prêmios por inovação tecnológica.
+                `
+            },
+            
+            {
+                nome:"Nancy Hopkins",
+
+                area:"Biologia Molecular",
+
+                foto:"/static/imagens/cientistas/nancy-hopkins.jpg",
+
+                biografia:`
+                Quem é:
+Professora e pesquisadora do MIT, reconhecida por suas pesquisas em genética e pelo trabalho em defesa da igualdade de gênero na ciência.
+
+Principais contribuições:
+
+Pesquisas sobre desenvolvimento embrionário e genética.
+Descobertas relacionadas ao câncer utilizando peixes-zebra.
+Liderou movimentos pela igualdade entre homens e mulheres no MIT.
+
+Dificuldades enfrentadas:
+
+Sofreu discriminação institucional durante sua carreira.
+Demonstrou que pesquisadoras recebiam menos recursos, laboratórios menores e menos oportunidades do que colegas homens.
+
+Prêmios e reconhecimentos:
+
+National Medal of Science.
+Diversas homenagens por sua atuação científica e social.
+                `
+            },
+
+            {
+                nome:"Barbara Liskov",
+
+                area:"Ciência da Computação",
+
+                foto:"/static/imagens/cientistas/barbara-liskov.jpg",
+
+                biografia:`
+                Quem é:
+Professora do MIT e uma das maiores especialistas em linguagens de programação e sistemas distribuídos.
+
+Principais contribuições:
+
+Criou importantes linguagens de programação.
+Desenvolveu o Princípio da Substituição de Liskov, utilizado mundialmente em programação orientada a objetos.
+Contribuiu para bancos de dados distribuídos e computação segura.
+
+Dificuldades enfrentadas:
+
+Enfrentou a baixa participação feminina na computação durante as décadas de 1960 e 1970.
+Precisou conquistar reconhecimento em uma área dominada por homens.
+
+Prêmios e reconhecimentos:
+
+Prêmio Turing (considerado o Nobel da Computação).
+Medalha John von Neumann.
+                `
+            },
+
+            {
+                nome:"Mildred Dresselhaus",
+
+                area:"Física e Nanotecnologia",
+
+                foto:"/static/imagens/cientistas/mildred-dresselhaus.jpg",
+
+                biografia:`
+                Quem foi:
+Conhecida como a "Rainha da Ciência do Carbono", foi professora do MIT e referência mundial em nanotecnologia.
+
+Principais contribuições:
+
+Pesquisas sobre nanotubos de carbono e grafeno.
+Avanços em materiais semicondutores.
+Contribuições fundamentais para a nanotecnologia moderna.
+
+Dificuldades enfrentadas:
+
+Sofreu preconceitos por ser mulher na física.
+Incentivou milhares de jovens pesquisadoras ao longo da carreira.
+
+Prêmios e reconhecimentos:
+
+Medalha Presidencial da Liberdade.
+National Medal of Science.
+Prêmio Enrico Fermi.
+                `
+            },
+
+            {
+                nome:"Nancy Kanwisher",
+
+                area:"Neurociência Cognitiva",
+
+                foto:"/static/imagens/cientistas/nancy-kanwisher.jpg",
+
+                biografia:`
+                Quem é:
+Pesquisadora do MIT especializada em funcionamento do cérebro humano.
+
+Principais contribuições:
+
+Descobriu a Área Fusiforme Facial (FFA), região responsável pelo reconhecimento de rostos.
+Pesquisas sobre percepção visual e cognição.
+Referência mundial em neuroimagem.
+
+Dificuldades enfrentadas:
+
+Enfrentou desafios para consolidar pesquisas interdisciplinares entre psicologia e neurociência.
+
+Prêmios e reconhecimentos:
+
+NAS Prize in Cognitive Science.
+Membro da Academia Nacional de Ciências dos Estados Unidos.
+                `
+            }
+
+
+        ],
+
+        "New York":[
+
+            {
+                nome:"Gertrude B. Elion",
+
+                area:"Farmacologia",
+
+                foto:"/static/imagens/cientistas/gertrude-b-elion.jpg",
+
+                biografia:`
+               Quem foi:
+Farmacologista responsável pelo desenvolvimento de diversos medicamentos que revolucionaram a medicina.
+
+Principais contribuições:
+
+Desenvolveu medicamentos contra leucemia, herpes, gota e rejeição de transplantes.
+Suas pesquisas contribuíram para o desenvolvimento de tratamentos contra a AIDS.
+Criou métodos modernos para desenvolvimento de medicamentos.
+
+Dificuldades enfrentadas:
+
+Foi rejeitada em diversos programas de pós-graduação por ser mulher.
+Trabalhou durante anos sem doutorado formal, conquistando reconhecimento apenas pela excelência científica.
+
+Prêmios e reconhecimentos:
+
+Nobel de Fisiologia ou Medicina (1988).
+National Medal of Science.
+                `
+            },
+            
+            {
+                nome:"Rosalyn Yalow",
+
+                area:"Física Médica",
+
+                foto:"/static/imagens/cientistas/rosalyn-yalow.jpg",
+
+                biografia:`
+                Quem foi:
+Primeira mulher americana a receber o Nobel de Medicina.
+
+Principais contribuições:
+
+Desenvolveu a técnica de Radioimunoensaio (RIA).
+Revolucionou exames hormonais e diagnósticos médicos.
+Melhorou o diagnóstico de diabetes e doenças da tireoide.
+
+Dificuldades enfrentadas:
+
+Sofreu preconceitos por ser mulher e judia.
+Teve dificuldades para ingressar em cursos de física.
+
+Prêmios e reconhecimentos:
+
+Nobel de Medicina (1977).
+                `
+            },
+
+            {
+                nome:"Virginia Apgar",
+
+                area:"Medicina",
+
+                foto:"/static/imagens/cientistas/virginia-apgar.jpg",
+
+                biografia:`
+                Quem foi:
+Anestesiologista e obstetra responsável pela criação do Índice de Apgar.
+
+Principais contribuições:
+
+Criou o Índice de Apgar para avaliação de recém-nascidos.
+Reduziu significativamente a mortalidade infantil.
+Modernizou os cuidados neonatais.
+
+Dificuldades enfrentadas:
+
+A cirurgia era praticamente fechada para mulheres.
+Mudou para anestesiologia após enfrentar discriminação na residência médica.
+
+Prêmios e reconhecimentos:
+
+National Women's Hall of Fame.
+Diversas homenagens da área médica.
+                `
+            },
+
+            {
+                nome:"Shirley Tilghman",
+
+                area:"Biologia Molecular",
+
+                foto:"/static/imagens/cientistas/shirley-tilghman.jpg",
+
+                biografia:`
+                Quem é:
+Geneticista reconhecida internacionalmente por pesquisas sobre desenvolvimento embrionário e expressão gênica.
+
+Principais contribuições:
+
+Pesquisas sobre genética de mamíferos.
+Estudos sobre desenvolvimento embrionário.
+Primeira mulher presidente da Universidade de Princeton.
+
+Dificuldades enfrentadas:
+
+Enfrentou desigualdade de gênero em cargos de liderança acadêmica.
+
+Prêmios e reconhecimentos:
+
+L'Oréal-UNESCO Women in Science.
+Diversos prêmios internacionais.
+                `
+            },
+
+            {
+                nome:"Helen Brooke Taussig",
+
+                area:"Cardiologia Pediátrica",
+
+                foto:"/static/imagens/cientistas/helen-brooke-taussig.jpg",
+
+                biografia:`
+                Quem foi:
+Fundadora da cardiologia pediátrica moderna.
+
+Principais contribuições:
+
+Desenvolveu a cirurgia que salvou milhares de crianças com cardiopatias congênitas.
+Contribuiu para a criação da cirurgia Blalock-Taussig.
+
+Dificuldades enfrentadas:
+
+Perdeu grande parte da audição ainda jovem.
+Sofreu preconceitos por ser mulher na medicina.
+
+Prêmios e reconhecimentos:
+
+Medalha Presidencial da Liberdade.
+Lasker Award.
+                `
+            }
+
+
+        ],
+
+        "Illinois":[
+
+            {
+                nome:"Maria Goeppert Mayer",
+
+                area:"Física Nuclear",
+
+                foto:"/static/imagens/cientistas/maria-goeppert-mayer.jpg",
+
+                biografia:`
+                Quem foi:
+Física teórica vencedora do Nobel de Física em 1963.
+
+Principais contribuições:
+
+Desenvolveu o Modelo de Camadas do Núcleo Atômico.
+Explicou a estabilidade dos núcleos atômicos.
+
+Dificuldades enfrentadas:
+
+Trabalhou por muitos anos sem salário devido à discriminação contra mulheres.
+Tinha dificuldade para conseguir cargos permanentes nas universidades.
+
+Prêmios e reconhecimentos:
+
+Nobel de Física (1963).
+Enrico Fermi Award.
+                `
+            },
+            
+            {
+                nome:"Janet Rowley",
+
+                area:"Genética",
+
+                foto:"/static/imagens/cientistas/janet-rowley.jpg",
+
+                biografia:`
+                Quem foi:
+Médica e geneticista pioneira na genética do câncer.
+
+Principais contribuições:
+
+Descobriu alterações cromossômicas causadoras de leucemias.
+Revolucionou o diagnóstico genético de diversos tipos de câncer.
+
+Dificuldades enfrentadas:
+
+Conciliou carreira científica com a criação de quatro filhos.
+Trabalhou em uma época de pouca participação feminina na pesquisa médica.
+
+Prêmios e reconhecimentos:
+
+Presidential Medal of Freedom.
+National Medal of Science.
+                `
+            },
+
+            {
+                nome:"Rita Colwell",
+
+                area:"Microbiologia",
+
+                foto:"/static/imagens/cientistas/rita-colwell.jpg",
+
+                biografia:`
+                Quem é:
+Microbiologista especializada em doenças infecciosas e qualidade da água.
+
+Principais contribuições:
+
+Descobriu relações entre mudanças climáticas e surtos de cólera.
+Desenvolveu métodos para monitoramento de doenças transmitidas pela água.
+
+Dificuldades enfrentadas:
+
+Enfrentou preconceitos de gênero durante sua formação científica.
+Precisou conquistar espaço em cargos de liderança.
+
+Prêmios e reconhecimentos:
+
+National Medal of Science.
+Ex-presidente da National Science Foundation.
+                `
+            },
+
+            {
+                nome:"Temple Grandin",
+
+                area:"Ciência Animal",
+
+                foto:"/static/imagens/cientistas/temple-grandin.jpg",
+
+                biografia:`
+                Quem é:
+Professora, pesquisadora e referência mundial em bem-estar animal.
+
+Principais contribuições:
+
+Desenvolveu sistemas humanizados para manejo de animais.
+Transformou práticas da indústria pecuária.
+Tornou-se referência na conscientização sobre autismo.
+
+Dificuldades enfrentadas:
+
+Foi diagnosticada com autismo na infância.
+Enfrentou preconceitos tanto pela condição quanto por atuar em uma área predominantemente masculina.
+
+Prêmios e reconhecimentos:
+
+National Women's Hall of Fame.
+Diversos doutorados honorários.
+                `
+            },
+
+            {
+                nome:"Bonnie Bassler",
+
+                area:"Biologia Molecular",
+
+                foto:"/static/imagens/cientistas/bonnie-bassler.jpg",
+
+                biografia:`
+                Quem é:
+Bióloga molecular especializada em microbiologia.
+
+Principais contribuições:
+
+Descobriu como as bactérias se comunicam por meio do processo chamado quorum sensing.
+Suas pesquisas abriram caminho para novos tratamentos contra infecções bacterianas.
+
+Dificuldades enfrentadas:
+
+Enfrentou a baixa representatividade feminina na microbiologia durante o início da carreira.
+
+Prêmios e reconhecimentos:
+
+Prêmio L'Oréal-UNESCO para Mulheres na Ciência.
+Shaw Prize em Ciências da Vida.
+Membro da Academia Nacional de Ciências dos Estados Unidos.
+                `
+            }
+
+
+        ]
+
+    },
+
+    "França":{
+
+        "Île-de-France":[
+
+            {
+                nome:"Marie Curie",
+
+                area:"Física e Química",
+
+                foto:"/static/imagens/cientistas/marie-curie.jpg",
+
+                biografia:`
+                Quem foi:
+Marie Curie foi uma das maiores cientistas da história. Trabalhou grande parte de sua carreira em Paris e tornou-se a primeira pessoa a receber dois Prêmios Nobel em áreas científicas diferentes.
+
+Principais contribuições:
+
+Descobriu os elementos Polônio e Rádio.
+Desenvolveu pesquisas sobre radioatividade.
+Criou unidades móveis de raio-X durante a Primeira Guerra Mundial.
+Revolucionou os tratamentos contra o câncer.
+
+Dificuldades enfrentadas:
+
+Sofreu preconceito por ser mulher e estrangeira.
+Teve dificuldades para conseguir reconhecimento acadêmico.
+Trabalhou durante anos em laboratórios com poucos recursos.
+
+Prêmios e reconhecimentos:
+
+Nobel de Física (1903).
+Nobel de Química (1911).
+                `
+            },
+            
+            {
+                nome:"Irène Joliot-Curie",
+
+                area:"Física Nuclear",
+
+                foto:"/static/imagens/cientistas/irene-joliot-curie.jpg",
+
+                biografia:`
+                Quem foi:
+Filha de Marie Curie, tornou-se uma das maiores pesquisadoras da física nuclear.
+
+Principais contribuições:
+
+Descobriu a radioatividade artificial.
+Desenvolveu pesquisas sobre elementos radioativos.
+Contribuiu para avanços na medicina nuclear.
+
+Dificuldades enfrentadas:
+
+Precisou provar constantemente sua competência por ser filha de Marie Curie.
+Sofreu discriminação por ser mulher.
+
+Prêmios e reconhecimentos:
+
+Nobel de Química (1935).
+                `
+            },
+
+            {
+                nome:"Marguerite Perey",
+
+                area:"Química Nuclear",
+
+                foto:"/static/imagens/cientistas/marguerite-perey.jpg",
+
+                biografia:`
+                Quem foi:
+Pesquisadora do Instituto Curie.
+
+Principais contribuições:
+
+Descobriu o elemento químico Frâncio.
+Desenvolveu pesquisas sobre radioatividade.
+
+Dificuldades enfrentadas:
+
+Trabalhou muitos anos como assistente antes de conseguir reconhecimento.
+Desenvolveu problemas de saúde devido à exposição à radiação.
+
+Prêmios e reconhecimentos:
+
+Primeira mulher membro da Academia Francesa de Ciências.
+                `
+            },
+
+            {
+                nome:"Françoise Barré-Sinoussi",
+
+                area:"Virologia",
+
+                foto:"/static/imagens/cientistas/francoise-barre-sinoussi.jpg",
+
+                biografia:`
+                Quem é:
+Pesquisadora do Instituto Pasteur.
+
+Principais contribuições:
+
+Descobriu o vírus HIV.
+Desenvolveu pesquisas sobre AIDS.
+Contribuiu para novos tratamentos antivirais.
+
+Dificuldades enfrentadas:
+
+Enfrentou preconceitos por ser mulher na medicina.
+Trabalhou em uma época de pouca compreensão sobre a AIDS.
+
+Prêmios e reconhecimentos:
+
+Nobel de Medicina (2008).
+                `
+            },
+
+            {
+                nome:"Anne L'Huillier",
+
+                area:"Física",
+
+                foto:"/static/imagens/cientistas/anne-l-huillier.jpg",
+
+                biografia:`
+                Quem é:
+Física reconhecida por pesquisas em lasers ultrarrápidos.
+
+Principais contribuições:
+
+Desenvolveu técnicas para estudar elétrons em escalas extremamente pequenas.
+Avançou a física dos pulsos de attossegundos.
+
+Dificuldades enfrentadas:
+
+Precisou conquistar espaço em uma área dominada por homens.
+
+Prêmios e reconhecimentos:
+
+Nobel de Física (2023).
+                `
+            }
+
+
+        ],
+
+        "Auvergne-Rhône-Alpes":[
+
+            {
+                nome:"Claudie Haigneré",
+
+                area:"Medicina e Astronáutica",
+
+                foto:"/static/imagens/cientistas/claudie-haignere.jpg",
+
+                biografia:`
+                Quem é:
+Primeira astronauta francesa.
+
+Principais contribuições:
+
+Participou de missões espaciais russas.
+Desenvolveu experimentos científicos em microgravidade.
+Tornou-se ministra da Pesquisa da França.
+
+Dificuldades enfrentadas:
+
+Enfrentou preconceitos por atuar na área espacial.
+
+Prêmios e reconhecimentos:
+
+Medalhas da Agência Espacial Europeia.
+                `
+            },
+            
+            {
+                nome:"Catherine Bréchignac",
+
+                area:"Física",
+
+                foto:"/static/imagens/cientistas/catherine-brechignac.jpg",
+
+                biografia:`
+                Quem é:
+Especialista em nanotecnologia.
+
+Principais contribuições:
+
+Pesquisas sobre física atômica.
+Liderou importantes instituições científicas francesas.
+
+Dificuldades enfrentadas:
+
+Enfrentou baixa representatividade feminina na física.
+
+Prêmios e reconhecimentos:
+
+Presidente do CNRS.
+                `
+            },
+
+            {
+                nome:"Hélène Courtois",
+
+                area:"Astrofísica",
+
+                foto:"/static/imagens/cientistas/helene-courtois.jpg",
+
+                biografia:`
+                Quem é:
+Pesquisadora da Universidade de Lyon.
+
+Principais contribuições:
+
+Descobriu o superaglomerado de galáxias Laniakea.
+Especialista em cosmologia.
+
+Dificuldades enfrentadas:
+
+Precisou conquistar reconhecimento em uma área dominada por homens.
+
+Prêmios e reconhecimentos:
+
+Diversos prêmios internacionais em astronomia.
+                `
+            },
+
+            {
+                nome:"Nathalie Cabrol",
+
+                area:"Astrobiologia",
+
+                foto:"/static/imagens/cientistas/nathalie-cabrol.jpg",
+
+                biografia:`
+                Quem é:
+Pesquisadora da NASA.
+
+Principais contribuições:
+
+Estudos sobre Marte.
+Pesquisa sobre possibilidade de vida extraterrestre.
+
+Dificuldades enfrentadas:
+
+Baixa presença feminina na exploração espacial.
+
+Prêmios e reconhecimentos:
+
+Medalhas da NASA.
+                `
+            },
+
+            {
+                nome:"Michèle Leduc",
+
+                area:"Física Quântica",
+
+                foto:"/static/imagens/cientistas/michele-leduc.jpg",
+
+                biografia:`
+                Quem é:
+Especialista em átomos ultrafrios.
+
+Principais contribuições:
+
+Pesquisas em mecânica quântica.
+Formação de novos pesquisadores.
+
+Dificuldades enfrentadas:
+
+Precisou superar barreiras de gênero na física.
+                `
+            }
+
+
+        ],
+
+        "Occitanie":[
+
+            {
+                nome:"Emmanuelle Charpentier",
+
+                area:"Microbiologia",
+
+                foto:"/static/imagens/cientistas/emmanuelle-charpentier.jpg",
+
+                biografia:`
+                Quem é:
+Uma das cientistas mais importantes da atualidade.
+
+Principais contribuições:
+
+Co-criou a tecnologia CRISPR-Cas9.
+Revolucionou a edição genética.
+
+Dificuldades enfrentadas:
+
+Enfrentou dificuldades para obter financiamento no início da carreira.
+
+Prêmios e reconhecimentos:
+
+Nobel de Química (2020).
+                `
+            },
+            
+            {
+                nome:"Sophie Germain",
+
+                area:"Matemática",
+
+                foto:"/static/imagens/cientistas/sophie-germain.jpg",
+
+                biografia:`
+                Quem foi:
+Uma das maiores matemáticas da história.
+
+Principais contribuições:
+
+Trabalhos sobre teoria dos números.
+Estudos sobre elasticidade.
+
+Dificuldades enfrentadas:
+
+Precisou usar pseudônimo masculino para publicar pesquisas.
+
+Prêmios e reconhecimentos:
+
+Seus estudos influenciam a matemática até hoje.
+                `
+            },
+
+            {
+                nome:"Anne Debroise",
+
+                area:"Química",
+
+                foto:"/static/imagens/cientistas/anne-debroise.jpg",
+
+                biografia:`
+                Quem é:
+Pesquisadora em química orgânica.
+
+Principais contribuições:
+
+Desenvolvimento de novos compostos químicos.
+
+Dificuldades enfrentadas:
+
+Baixa representatividade feminina na química.
+                `
+            },
+
+            {
+                nome:"Florence Rabier",
+
+                area:"Meteorologia",
+
+                foto:"/static/imagens/cientistas/florence-rabier.jpg",
+
+                biografia:`
+                Quem é:
+Diretora do Centro Europeu de Previsões Meteorológicas.
+
+Principais contribuições:
+
+Melhorou sistemas de previsão do tempo.
+Pesquisas sobre clima global.
+
+Dificuldades enfrentadas:
+
+Atuação em um setor historicamente masculino.
+                `
+            },
+
+            {
+                nome:"Pascale Cossart",
+
+                area:"Microbiologia",
+
+                foto:"/static/imagens/cientistas/pascale-cossart.jpg",
+
+                biografia:`
+                Quem é:
+Especialista em doenças infecciosas.
+
+Principais contribuições:
+
+Pesquisas sobre bactérias causadoras da listeriose.
+Descobertas sobre infecções celulares.
+
+Dificuldades enfrentadas:
+
+Precisou conquistar espaço na microbiologia internacional.
+                `
+            }
+
+
+        ],
+
+        "Provence-Alpes-Côte d'Azur":[
+
+            {
+                nome:"Edwige Helmer Laurent",
+
+                area:"Matemática",
+
+                foto:"/static/imagens/cientistas/edwige-helmer-laurent.jpg",
+
+                biografia:`
+                Quem é:
+Pesquisadora francesa em matemática aplicada.
+
+Principais contribuições:
+
+Trabalhos em modelagem matemática.
+Formação de pesquisadores.
+
+Dificuldades enfrentadas:
+
+Enfrentou baixa participação feminina na matemática.
+                `
+            },
+            
+            {
+                nome:"Nathalie Cabrol",
+
+                area:"Astrobiologia",
+
+                foto:"/static/imagens/cientistas/nathalie-cabrol.jpg",
+
+                biografia:`
+                Quem é:
+Especialista em exploração de Marte.
+
+Principais contribuições:
+
+Lidera pesquisas sobre ambientes extremos.
+Desenvolve estudos para futuras missões espaciais.
+
+Dificuldades enfrentadas:
+
+Precisou conquistar espaço em projetos internacionais.
+                `
+            },
+
+            {
+                nome:"Françoise Combes",
+
+                area:"Astrofísica",
+
+                foto:"/static/imagens/cientistas/francoise-combes.jpg",
+
+                biografia:`
+                Quem é:
+Uma das maiores astrônomas da França.
+
+Principais contribuições:
+
+Estudos sobre matéria escura.
+Formação e evolução das galáxias.
+
+Dificuldades enfrentadas:
+
+Enfrentou preconceitos em uma área predominantemente masculina.
+
+Prêmios e reconhecimentos:
+
+Medalha de Ouro do CNRS.
+                `
+            },
+
+            {
+                nome:"Catherine Cesarsky",
+
+                area:"Astrofísica",
+
+                foto:"/static/imagens/cientistas/catherine-cesarsky.jpg",
+
+                biografia:`
+                Quem é:
+Ex-presidente da União Astronômica Internacional.
+
+Principais contribuições:
+
+Estudos sobre raios cósmicos.
+Desenvolvimento da astronomia moderna.
+
+Dificuldades enfrentadas:
+
+Baixa representatividade feminina na astronomia.
+                `
+            },
+
+            {
+                nome:"Dominique Langevin",
+
+                area:"Física",
+
+                foto:"/static/imagens/cientistas/dominique-langevin.jpg",
+
+                biografia:`
+                Quem é:
+Especialista em matéria condensada e interfaces.
+
+Principais contribuições:
+
+Pesquisas sobre espumas, emulsões e materiais complexos.
+Referência mundial em físico-química.
+
+Dificuldades enfrentadas:
+
+Precisou conquistar reconhecimento em uma área dominada por homens.
+                `
+            }
+
+
+        ],
+
+    },
+
+};
+
+const params = new URLSearchParams(window.location.search);
+const pais   = params.get("pais");
+const estado = params.get("estado");
+
+// Botão voltar
+window.addEventListener("DOMContentLoaded", () => {
+    const btn = document.getElementById("btnVoltar");
+    if (btn) {
+        btn.addEventListener("click", () => {
+            window.location.href = `/estados?pais=${encodeURIComponent(pais)}`;
+        });
+    }
+});
+
+// Título com formatação
+document.getElementById("tituloPagina").innerHTML =
+    `${pais} <em>•</em> ${estado}`;
+
+const lista = document.getElementById("listaCientistas");
+
+const cientistas = cientistasPorEstado?.[pais]?.[estado] || [];
+
+cientistas.forEach(c => {
+    const card = document.createElement("div");
+    card.className = "card-cientista";
+    card.innerHTML = `
+        <div class="card-area-tag">✦ ${c.area}</div>
+        <h2>${c.nome}</h2>
+        <p>${c.area}</p>
+        <div class="card-cta">
+            <span>Ler mais</span>
+            <span class="card-cta-arrow">→</span>
+        </div>
+    `;
+    card.onclick = () => { abrirModal(c); };
+    lista.appendChild(card);
+});
+
+function abrirModal(c) {
+    document.getElementById("fotoCientista").src    = c.foto;
+    document.getElementById("nomeCientista").innerText  = c.nome;
+    document.getElementById("areaCientista").innerText  = c.area;
+    document.getElementById("biografiaCientista").innerText = c.biografia;
+    document.getElementById("modal").style.display = "flex";
+}
+
+document.getElementById("fecharModal").onclick = () => {
+    document.getElementById("modal").style.display = "none";
+};
+
+// Fechar clicando fora
+document.getElementById("modal").onclick = function(e) {
+    if (e.target === this) this.style.display = "none";
+};
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Mapa Mundial</title>
+
+    <script src="https://unpkg.com/three"></script>
+    <script src="https://unpkg.com/globe.gl"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --cyan:   #67E8F9;
+            --gold:   #F59E0B;
+            --white:  #F0F4FF;
+            --glass:  rgba(8, 14, 35, 0.60);
+            --border: rgba(103, 232, 249, 0.12);
+            --hover:  rgba(103, 232, 249, 0.10);
+            --painel-w: 320px;
+        }
+
+        html {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+
+            /* Fundo espacial em gradiente — sem imagem externa */
+            background: radial-gradient(ellipse 120% 100% at 60% 110%,
+                            #0d1b4b 0%,
+                            #080e28 40%,
+                            #04060f 100%);
+
+            color: var(--white);
+            font-family: 'Inter', sans-serif;
+
+            display: flex;
+            flex-direction: row;
+        }
+
+        /* Canvas de estrelas — fica abaixo de tudo */
+        #stars-canvas {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Névoa de profundidade sobre as estrelas */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 55% 60% at 25% 55%, rgba(107,33,168,0.22) 0%, transparent 65%),
+                radial-gradient(ellipse 40% 40% at 75% 30%, rgba(14,60,140,0.18) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* ── Globo ──
+           Ocupa tudo MENOS a largura do painel.
+           width e height são também forçados via JS abaixo.        */
+        #globo-container {
+            position: relative;
+            z-index: 1;
+            /* calcula: 100vw menos o painel */
+            width: calc(100vw - var(--painel-w));
+            height: 100vh;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        /* O canvas que o globe.gl injeta precisa ficar contido */
+        #globo-container canvas {
+            display: block !important;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* ── Painel lateral ── */
+        .painel {
+            width: var(--painel-w);
+            flex-shrink: 0;
+            height: 100vh;
+            position: relative;
+            z-index: 2;
+
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+
+            border-left: 1px solid var(--border);
+
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+
+            animation: slideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(40px); opacity: 0; }
+            to   { transform: translateX(0);    opacity: 1; }
+        }
+
+        /* gradiente na borda esquerda */
+        .painel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 1px; height: 100%;
+            background: linear-gradient(
+                to bottom,
+                transparent 0%,
+                var(--cyan)  30%,
+                var(--gold)  70%,
+                transparent 100%
+            );
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        /* ── Cabeçalho ── */
+        .painel-header {
+            padding: 28px 24px 20px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .painel-eyebrow {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .painel-eyebrow span {
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--cyan);
+            opacity: 0.8;
+            white-space: nowrap;
+        }
+
+        .painel-eyebrow-line {
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, var(--cyan), transparent);
+            opacity: 0.4;
+        }
+
+        .painel h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 600;
+            font-size: 22px;
+            line-height: 1.3;
+            color: var(--white);
+        }
+
+        .painel h1 em {
+            font-style: italic;
+            font-weight: 300;
+            color: var(--gold);
+        }
+
+        /* ── Campo de pesquisa ── */
+        .pesquisa-wrapper {
+            padding: 16px 24px 0;
+            flex-shrink: 0;
+        }
+
+        .pesquisa-inner {
+            position: relative;
+        }
+
+        .pesquisa-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--cyan);
+            opacity: 0.55;
+            pointer-events: none;
+            font-size: 15px;
+            line-height: 1;
+        }
+
+        .pesquisa {
+            width: 100%;
+            padding: 10px 12px 10px 36px;
+
+            background: rgba(103, 232, 249, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 300;
+            color: var(--white);
+
+            outline: none;
+            transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
+        }
+
+        .pesquisa::placeholder { color: rgba(240,244,255,0.30); }
+
+        .pesquisa:focus {
+            border-color: rgba(103,232,249,0.45);
+            background: rgba(103,232,249,0.09);
+            box-shadow: 0 0 0 3px rgba(103,232,249,0.07);
+        }
+
+        /* ── Lista ── */
+        .lista-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px 24px 20px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(103,232,249,0.2) transparent;
+        }
+
+        .lista-scroll::-webkit-scrollbar       { width: 4px; }
+        .lista-scroll::-webkit-scrollbar-track { background: transparent; }
+        .lista-scroll::-webkit-scrollbar-thumb { background: rgba(103,232,249,0.2); border-radius: 4px; }
+
+        .lista-label {
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: rgba(240,244,255,0.30);
+            margin-bottom: 10px;
+        }
+
+        .lista-paises {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .pais-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s, transform 0.2s;
+
+            animation: fadeItem 0.35s ease both;
+        }
+
+        .pais-item:nth-child(1) { animation-delay: 0.05s; }
+        .pais-item:nth-child(2) { animation-delay: 0.10s; }
+        .pais-item:nth-child(3) { animation-delay: 0.15s; }
+        .pais-item:nth-child(4) { animation-delay: 0.20s; }
+
+        @keyframes fadeItem {
+            from { opacity: 0; transform: translateX(8px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        .pais-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--cyan);
+            flex-shrink: 0;
+            opacity: 0.45;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .pais-nome {
+            font-size: 14px;
+            font-weight: 400;
+            color: rgba(240,244,255,0.80);
+            transition: color 0.2s;
+        }
+
+        .pais-item:hover {
+            background: var(--hover);
+            border-color: rgba(103,232,249,0.25);
+            transform: translateX(4px);
+        }
+
+        .pais-item:hover .pais-dot  { opacity: 1; transform: scale(1.3); }
+        .pais-item:hover .pais-nome { color: var(--white); }
+
+        /* ── Rodapé ── */
+        .painel-footer {
+            padding: 14px 24px;
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-dot {
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: var(--cyan);
+            animation: blink 2.5s ease-in-out infinite;
+        }
+
+        .footer-dot:nth-child(2) { animation-delay: 0.5s; }
+
+        @keyframes blink {
+            0%, 100% { opacity: 0.2; }
+            50%       { opacity: 0.9; }
+        }
+
+        .footer-text {
+            font-size: 11px;
+            font-weight: 300;
+            color: rgba(240,244,255,0.30);
+        }
+
+        /* Label dos marcadores no globo */
+        .label-pais {
+            color: white;
+            font-size: 13px;
+            font-weight: 500;
+            text-shadow:
+                0 0 8px rgba(103,232,249,0.9),
+                0 0 20px rgba(103,232,249,0.5);
+            letter-spacing: 0.5px;
+        }
+
+        /* ── Mobile ── */
+        @media (max-width: 768px) {
+            :root { --painel-w: 100vw; }
+
+            body { flex-direction: column; }
+
+            #globo-container {
+                width: 100vw !important;
+                height: 55vh !important;
+            }
+
+            .painel {
+                width: 100%;
+                height: 45vh;
+                border-left: none;
+                border-top: 1px solid var(--border);
+                animation: slideUp 0.6s cubic-bezier(0.25,0.46,0.45,0.94) both;
+            }
+
+            @keyframes slideUp {
+                from { transform: translateY(24px); opacity: 0; }
+                to   { transform: translateY(0);    opacity: 1; }
+            }
+
+            .painel::before {
+                width: 100%; height: 1px;
+                background: linear-gradient(to right, transparent, var(--cyan) 40%, var(--gold) 60%, transparent);
+            }
+
+            .painel-header { padding: 14px 18px 12px; }
+            .painel h1     { font-size: 16px; }
+            .pesquisa-wrapper { padding: 10px 18px 0; }
+            .lista-scroll  { padding: 10px 18px 14px; }
+            .painel-footer { padding: 10px 18px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="stars-canvas"></canvas>
+
+    <div id="globo-container"></div>
+
+    <div class="painel">
+
+        <div class="painel-header">
+            <div class="painel-eyebrow">
+                <span>Mulheres Cientistas</span>
+                <span class="painel-eyebrow-line"></span>
+            </div>
+            <h1>Selecione um país <em>no globo</em> ou pesquise abaixo</h1>
+        </div>
+
+        <div class="pesquisa-wrapper">
+            <div class="pesquisa-inner">
+                <span class="pesquisa-icon">⌕</span>
+                <input
+                    type="text"
+                    id="pesquisa"
+                    class="pesquisa"
+                    placeholder="Pesquisar país…"
+                    autocomplete="off">
+            </div>
+        </div>
+
+        <div class="lista-scroll">
+            <p class="lista-label">Países disponíveis</p>
+            <div id="listaPaises" class="lista-paises"></div>
+        </div>
+
+        <div class="painel-footer">
+            <span class="footer-dot"></span>
+            <span class="footer-dot"></span>
+            <span class="footer-text">Clique em um país para ver as cientistas</span>
+        </div>
+
+    </div>
+
+<script>
+// ── Estrelas animadas ──
+(function () {
+    const canvas = document.getElementById('stars-canvas');
+    const ctx    = canvas.getContext('2d');
+    let W, H, stars = [], nebulas = [], raf;
+
+    function resize() {
+        W = canvas.width  = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+    }
+
+    function createStars() {
+        // Estrelas pequenas (fundo)
+        stars = Array.from({ length: 220 }, () => ({
+            x:      Math.random() * W,
+            y:      Math.random() * H,
+            r:      Math.random() * 1.5 + 0.2,
+            phase:  Math.random() * Math.PI * 2,
+            speed:  Math.random() * 0.003 + 0.0008,
+            drift:  (Math.random() - 0.5) * 0.06,
+            bright: Math.random() * 0.5 + 0.3, // brilho base
+        }));
+
+        // Estrelas grandes (destaque, poucas)
+        for (let i = 0; i < 12; i++) {
+            stars.push({
+                x:      Math.random() * W,
+                y:      Math.random() * H,
+                r:      Math.random() * 2.2 + 1.2,
+                phase:  Math.random() * Math.PI * 2,
+                speed:  Math.random() * 0.002 + 0.0005,
+                drift:  (Math.random() - 0.5) * 0.04,
+                bright: 0.7,
+                glow:   true,
+            });
+        }
+
+        // Nébulas suaves (manchas coloridas estáticas)
+        nebulas = [
+            { x: W * 0.15, y: H * 0.25, rx: 180, ry: 120, color: 'rgba(103,50,200,0.07)' },
+            { x: W * 0.70, y: H * 0.60, rx: 220, ry: 160, color: 'rgba(30,90,200,0.06)'  },
+            { x: W * 0.45, y: H * 0.80, rx: 260, ry: 100, color: 'rgba(103,232,249,0.04)' },
+        ];
+    }
+
+    function drawNebulas() {
+        nebulas.forEach(n => {
+            const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, Math.max(n.rx, n.ry));
+            g.addColorStop(0, n.color);
+            g.addColorStop(1, 'transparent');
+            ctx.save();
+            ctx.scale(1, n.ry / n.rx);
+            ctx.beginPath();
+            ctx.arc(n.x, n.y * (n.rx / n.ry), n.rx, 0, Math.PI * 2);
+            ctx.fillStyle = g;
+            ctx.fill();
+            ctx.restore();
+        });
+    }
+
+    function draw(t) {
+        ctx.clearRect(0, 0, W, H);
+
+        // Névoas
+        drawNebulas();
+
+        // Estrelas
+        stars.forEach(s => {
+            const a = s.bright * (0.4 + 0.6 * Math.abs(Math.sin(s.phase + t * s.speed)));
+
+            if (s.glow) {
+                // halo para estrelas grandes
+                const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r * 5);
+                g.addColorStop(0, `rgba(200,235,255,${a * 0.4})`);
+                g.addColorStop(1, 'transparent');
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.r * 5, 0, Math.PI * 2);
+                ctx.fillStyle = g;
+                ctx.fill();
+            }
+
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(210,235,255,${a})`;
+            ctx.fill();
+
+            s.x += s.drift;
+            if (s.x < -5) s.x = W + 5;
+            if (s.x > W + 5) s.x = -5;
+        });
+
+        raf = requestAnimationFrame(draw);
+    }
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) cancelAnimationFrame(raf);
+        else raf = requestAnimationFrame(draw);
+    });
+
+    window.addEventListener('resize', () => { resize(); createStars(); });
+    resize();
+    createStars();
+    requestAnimationFrame(draw);
+})();
+</script>
+
+<script>
+
+const paises = [
+
+{
+    nome: "Brasil",
+    lat: -10.0,
+    lng: -53.0
+},
+
+{
+    nome: "Estados Unidos",
+    lat: 39.5,
+    lng: -98.5
+},
+
+{
+    nome: "França",
+    lat: 46.6,
+    lng: 2.3
+},
+
+{
+    nome: "Japão",
+    lat: 35.7,
+    lng: 139.7
+},
+
+{
+    nome: "Itália",
+    lat: 41.9,
+    lng: 12.5
+},
+
+{
+    nome: "Rússia",
+    lat: 55.75,
+    lng: 37.6
+},
+
+{
+    nome: "Argentina",
+    lat: -34.6,
+    lng: -58.4
+},
+
+{
+    nome: "Portugal",
+    lat: 38.7,
+    lng: -9.1
+}
+
+];
+
+// Lista lateral
+const lista = document.getElementById("listaPaises");
+
+function renderizarLista(filtro = "") {
+    lista.innerHTML = "";
+    paises
+        .filter(p => p.nome.toLowerCase().includes(filtro.toLowerCase()))
+        .forEach(pais => {
+            const div = document.createElement("div");
+            div.className = "pais-item";
+            div.innerHTML = `
+                <span class="pais-dot"></span>
+                <span class="pais-nome">${pais.nome}</span>
+            `;
+            div.onclick = () => {
+                window.location.href = `/estados?pais=${encodeURIComponent(pais.nome)}`;
+            };
+            lista.appendChild(div);
+        });
+}
+
+renderizarLista();
+
+document.getElementById("pesquisa").addEventListener("input", (e) => {
+    renderizarLista(e.target.value);
+});
+
+// ── Globo ──
+// Calcula a largura real disponível (viewport menos o painel)
+const painelEl = document.querySelector('.painel');
+const painelW  = painelEl.offsetWidth;
+const globoW   = window.innerWidth - painelW;
+const globoH   = window.innerHeight;
+
+const container = document.getElementById('globo-container');
+container.style.width  = globoW + 'px';
+container.style.height = globoH + 'px';
+
+const globe = Globe()(container)
+    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+    .backgroundColor('rgba(0,0,0,0)')
+    .width(globoW)
+    .height(globoH)
+    .labelsData(paises)
+    .labelLat(d => d.lat)
+    .labelLng(d => d.lng)
+    .labelText(d => d.nome)
+    .labelSize(2.2)
+    .labelColor(() => "#ffffff")
+    .labelDotRadius(1.2)
+    .onLabelClick((pais) => {
+        window.location.href = `/estados?pais=${encodeURIComponent(pais.nome)}`;
+    });
+
+globe.controls().autoRotate = true;
+globe.controls().autoRotateSpeed = 0.5;
+
+// Redimensiona o globo se a janela mudar de tamanho
+window.addEventListener('resize', () => {
+    const pw = document.querySelector('.painel').offsetWidth;
+    const gw = window.innerWidth - pw;
+    const gh = window.innerHeight;
+    container.style.width  = gw + 'px';
+    container.style.height = gh + 'px';
+    globe.width(gw).height(gh);
+});
+
+</script>
+
+</body>
+</html>
